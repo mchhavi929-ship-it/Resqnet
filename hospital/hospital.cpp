@@ -13,19 +13,17 @@ private:
     int availableBeds;
 
 public:
-    // Parameterized constructor
-    Hospital(int hId, string hName, string hLocation,
+    Hospital(int hId, string hName, string hLoc,
              string hSpecialty, int beds)
     {
         id = hId;
         name = hName;
-        location = hLocation;
+        location = hLoc;
         specialty = hSpecialty;
         totalBeds = beds;
         availableBeds = beds;
     }
 
-    // Display hospital details
     void display()
     {
         cout << "\nHospital ID       : " << id;
@@ -48,7 +46,6 @@ public:
                  << " has no available beds.\n";
     }
 
-    // Admit patient
     void admitPatient()
     {
         if (availableBeds > 0)
@@ -64,7 +61,6 @@ public:
         }
     }
 
-    // Discharge patient
     void dischargePatient()
     {
         if (availableBeds < totalBeds)
@@ -82,24 +78,17 @@ public:
 
 int main()
 {
-    Hospital h1(201, "City Emergency Hospital",
-                "Central City", "Trauma", 50);
+    Hospital h1(201, "City Hospital","Central City", "Trauma", 50);
 
-    Hospital h2(202, "Metro Medical Center",
-                "North Zone", "General", 40);
+    Hospital h2(202, "Medical Center","North Zone", "General", 40);
 
-    Hospital h3(203, "Life Care Hospital",
-                "South Zone", "Burns", 30);
+    Hospital h3(203, "Life Care Hospital","South Zone", "Burns", 30);
 
-    Hospital h4(204, "River Side Hospital",
-                "East Zone", "Emergency", 35);
+    Hospital h4(204, "River Hospital","East Zone", "Emergency", 35);
 
-    Hospital h5(205, "Central Trauma Center",
-                "West Zone", "Trauma", 60);
+    Hospital h5(205, "Central Hospital","West Zone", "Trauma", 60);
 
-    cout << "\n========================================\n";
     cout << "          RESQNET HOSPITALS             \n";
-    cout << "========================================\n";
 
     h1.display();
     h2.display();
@@ -107,9 +96,7 @@ int main()
     h4.display();
     h5.display();
 
-    cout << "\n========================================\n";
     cout << "        HOSPITAL AVAILABILITY           \n";
-    cout << "========================================\n";
 
     h1.checkAvailability();
     h2.checkAvailability();
@@ -117,10 +104,7 @@ int main()
     h4.checkAvailability();
     h5.checkAvailability();
 
-    cout << "\n========================================\n";
     cout << "          PATIENT MANAGEMENT             \n";
-    cout << "========================================\n";
-
     h1.admitPatient();
     h1.display();
 
