@@ -20,10 +20,10 @@ int main()
 
     do
     {
-        printf("\n===== RESQNET DISASTER MANAGEMENT =====\n");
+        printf("\n RESQNET DISASTER MANAGEMENT \\n");
         printf("1. Report New Disaster\n");
         printf("2. View Active Disasters\n");
-        printf("0. Exit\n");
+        printf("3. Exit\n");
         printf("Enter choice: ");
         scanf("%d", &choice);
 
@@ -37,7 +37,7 @@ int main()
                 displayDisasters(disasters, count);
                 break;
 
-            case 0:
+            case 3:
                 printf("\nExiting Disaster Management...\n");
                 break;
 
@@ -45,7 +45,7 @@ int main()
                 printf("\nInvalid choice!\n");
         }
 
-    } while (choice != 0);
+    } while (choice != 3);
 
     return 0;
 }
