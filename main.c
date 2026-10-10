@@ -1,37 +1,49 @@
 #include <stdio.h>
+#include "disaster/disaster.h"
+#include "routing/routing.h"
+#include "hospital/hospital.h"
 
-int main()
+int main(void)
 {
     int ch;
 
     do
     {
-        printf("RESQNET\nSmart Urban Emergency Network\n");
-        printf("1.Report New Disaster\n");
-        printf("2.View Active Disasters\n");
-        printf("3.Prioritize Emergencies\n");
-        printf("4.Allocate Emergency Vehicle\n");
-        printf("5.View Available Vehicles\n");
-        printf("6.Calculate Best Emergency Route\n");
-        printf("8.Simulate Road Failure\n");
-        printf("7.View road Network\n");
-        printf("9.View Hospitals\n");
-        printf("10.Select Best Hospital\n");
-        printf("11.Analyze Critical Junctions\n");
-        printf("12.View Simulation Results\n");
-        printf("13.Exit\n");
+        printf("\n====================================\n");
+        printf(" RESQNET - Smart Urban Emergency Network\n");
+        printf("====================================\n");
+        printf("1. Report New Disaster\n");
+        printf("2. View Active Disasters\n");
+        printf("3. Prioritize Emergencies\n");
+        printf("4. Allocate Emergency Vehicle\n");
+        printf("5. View Available Vehicles\n");
+        printf("6. Calculate Best Emergency Route\n");
+        printf("7. View Road Network\n");
+        printf("8. Simulate Road Failure\n");
+        printf("9. View Hospitals\n");
+        printf("10. Select Best Hospital\n");
+        printf("11. Analyze Critical Junctions\n");
+        printf("12. View Simulation Results\n");
+        printf("13. Exit\n");
+        printf("------------------------------------\n");
+        printf("Enter your choice: ");
 
-        printf("\nEnter your choice: ");
-        scanf("%d", &ch);
+        if (scanf("%d", &ch) != 1)
+        {
+            printf("Invalid input! Please enter a number.\n");
 
-        switch(ch)
+            while (getchar() != '\n')
+                ;
+
+            ch = 0;
+            continue;
+        }
+
+        switch (ch)
         {
             case 1:
-                printf("\nReport New Disaster selected.\n");
-                break;
-
             case 2:
-                printf("\nView Active Disasters selected.\n");
+                disasterModule();
                 break;
 
             case 3:
@@ -47,7 +59,7 @@ int main()
                 break;
 
             case 6:
-                printf("\nCalculate Best Emergency Route selected.\n");
+                routingModule();
                 break;
 
             case 7:
@@ -59,7 +71,7 @@ int main()
                 break;
 
             case 9:
-                printf("\nView Hospitals selected.\n");
+                hospitalModule();
                 break;
 
             case 10:
@@ -75,14 +87,14 @@ int main()
                 break;
 
             case 13:
-                printf("\nExiting RESQNET...\n");
+                printf("\nExiting RESQNET. Goodbye!\n");
                 break;
 
             default:
-                printf("\nInvalid choice! Try again.\n");
+                printf("\nInvalid choice! Please choose 1-13.\n");
         }
 
-    } while(ch != 13);
+    } while (ch != 13);
 
     return 0;
 }
