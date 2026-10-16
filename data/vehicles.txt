@@ -1,0 +1,6 @@
+# V id type base_junction name
+V 1 Ambulance 1 Ambulance-A1
+V 2 Ambulance 4 Ambulance-A2
+V 3 FireTruck 1 FireTruck-F1
+V 4 Police 3 Police-P1
+V 5 RescueBoat 6 Boat-B1

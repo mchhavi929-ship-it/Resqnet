@@ -1,0 +1,27 @@
+# Junctions:  J id x y type name
+J 1 0   0   base     Base Station
+J 2 100 0   normal   Main Road
+J 3 200 0   normal   Station Chowk
+J 4 300 0   hospital City Hospital
+J 5 0   100 normal   Park Lane
+J 6 100 100 normal   Market Square
+J 7 200 100 normal   Bus Stand
+J 8 300 100 normal   Civil Lines
+J 9 100 200 normal   Old Town
+J 10 300 200 hospital Green Hospital
+
+# Roads:  R from to distance_m time_s
+R 1 2 500 60
+R 2 3 400 50
+R 3 4 300 40
+R 1 5 400 50
+R 5 6 500 60
+R 6 7 400 50
+R 7 8 300 40
+R 8 4 200 30
+R 2 6 300 40
+R 3 7 350 45
+R 6 9 400 55
+R 9 10 500 70
+R 8 10 400 50
+R 7 9 450 60
