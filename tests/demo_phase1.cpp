@@ -1,11 +1,11 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include "CityLoader.h"
 #include "InputHandler.h"
 #include "DisasterQueue.h"
 #include "ResourcePool.h"
 
-// Which vehicle types respond to each disaster type
 static std::vector<VehicleType> requiredFor(DisasterType t) {
     switch (t) {
         case DisasterType::Fire:              return {VehicleType::FireTruck, VehicleType::Ambulance};
@@ -17,6 +17,24 @@ static std::vector<VehicleType> requiredFor(DisasterType t) {
         case DisasterType::HazardousIncident: return {VehicleType::FireTruck, VehicleType::Police};
     }
     return {VehicleType::Ambulance};
+}
+
+static std::string typeName(DisasterType t) {
+    static const char* names[] = {
+        "Fire", "Flood", "Earthquake", "Road accident",
+        "Building collapse", "Storm", "Hazardous incident"
+    };
+    return names[static_cast<int>(t)];
+}
+
+static void printLine(char c = '=') {
+    std::cout << std::string(60, c) << "\n";
+}
+
+static void printHeader(const std::string& title) {
+    printLine();
+    std::cout << " " << title << "\n";
+    printLine();
 }
 
 int main() {
@@ -32,12 +50,10 @@ int main() {
         return 1;
     }
 
-    std::cout << "=== RESQNET Phase 1 ===\n\n";
+    printHeader("RESQNET Phase 1 - Emergency Input");
 
-    // Collect as many emergencies as the user wants
     DisasterQueue queue;
     int nextId = 1;
-
     while (true) {
         std::cout << "Add an emergency? (y/n): ";
         std::string answer;
@@ -53,49 +69,48 @@ int main() {
         return 0;
     }
 
-    // Dispatch by priority
-    std::cout << "\n=== Dispatching by priority ===\n";
+    int total = queue.size();
+    printHeader("DISPATCH REPORT  (" + std::to_string(total) + " incident(s), by priority)");
+
     int order = 1;
     while (!queue.empty()) {
         Disaster d = queue.pop();
-        std::cout << "\n[Handled " << order++ << "] " << describe(d) << "\n";
+
+        std::cout << "\n INCIDENT " << order << " of " << total
+                  << "  |  " << typeName(d.type) << "\n";
+        std::cout << " Location : " << city.nameOf(d.location)
+                  << " (junction " << d.location << ")\n";
+        std::cout << " Severity : " << d.severity << "/10"
+                  << "  |  People affected: " << d.peopleAffected << "\n";
+        std::cout << " Priority : " << (order == 1 ? "Handled first" : "Queued") << "\n";
+        printLine('-');
 
         std::vector<VehicleType> needed = requiredFor(d.type);
         for (VehicleType t : needed) {
             int idx = pool.findBestVehicle({t}, d.location, city);
             if (idx < 0) {
-                std::cout << "  No free vehicle of that type\n";
+                std::cout << "  [--] No free vehicle of the required type\n";
                 continue;
             }
 
             Vehicle& v = pool.at(idx);
             std::vector<NodeId> path = city.shortestPath(v.location, d.location);
-            Seconds total = city.travelTime(v.location, d.location);
+            Seconds arrival = city.travelTime(v.location, d.location);
 
-            std::cout << "  " << v.name << " dispatched from " << city.nameOf(v.location) << "\n";
-            std::cout << "  Route: ";
+            std::cout << "  [GO] " << v.name << "  (from " << city.nameOf(v.location) << ")\n";
+            std::cout << "       Route   : ";
             for (size_t i = 0; i < path.size(); ++i) {
                 std::cout << city.nameOf(path[i]);
                 if (i + 1 < path.size()) std::cout << " -> ";
             }
             std::cout << "\n";
-
-            Seconds clock = 0;
-            for (size_t i = 0; i + 1 < path.size(); ++i) {
-                for (const Road& r : city.getRoadsFrom(path[i])) {
-                    if (r.to == path[i + 1]) {
-                        clock += static_cast<Seconds>(r.baseTime * r.congestion);
-                        break;
-                    }
-                }
-                std::cout << "  t=" << clock << "s  " << v.name
-                          << " reached " << city.nameOf(path[i + 1]) << "\n";
-            }
-            std::cout << "  " << v.name << " is now ON SCENE (total " << total << " s)\n";
+            std::cout << "       Arrives : " << arrival << " s  -  ON SCENE\n";
 
             v.state = VehicleState::OnScene;
             v.location = d.location;
         }
+        printLine();
+        order++;
     }
     return 0;
 }
