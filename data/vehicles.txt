@@ -5,3 +5,4 @@ V 3 FireTruck 1 FireTruck-F1
 V 4 Police 3 Police-P1
 V 5 RescueBoat 6 Boat-B1
 V 6 Helicopter 1 Helicopter-H1
+V 7 Helicopter 4 Helicopter-H2
