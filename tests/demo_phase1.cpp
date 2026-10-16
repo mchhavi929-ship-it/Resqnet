@@ -34,11 +34,26 @@ int main() {
 
     std::cout << "=== RESQNET Phase 1 ===\n\n";
 
+    // Collect as many emergencies as the user wants
     DisasterQueue queue;
-    queue.push(askDisasterFromUser(1, city));
-    std::cout << "\n";
-    queue.push(askDisasterFromUser(2, city));
+    int nextId = 1;
 
+    while (true) {
+        std::cout << "Add an emergency? (y/n): ";
+        std::string answer;
+        std::getline(std::cin, answer);
+        if (answer.empty() || (answer[0] != 'y' && answer[0] != 'Y')) break;
+
+        queue.push(askDisasterFromUser(nextId++, city));
+        std::cout << "\n";
+    }
+
+    if (queue.empty()) {
+        std::cout << "No emergencies entered. Exiting.\n";
+        return 0;
+    }
+
+    // Dispatch by priority
     std::cout << "\n=== Dispatching by priority ===\n";
     int order = 1;
     while (!queue.empty()) {
