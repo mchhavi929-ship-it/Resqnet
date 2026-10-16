@@ -9,10 +9,10 @@
 static std::vector<VehicleType> requiredFor(DisasterType t) {
     switch (t) {
         case DisasterType::Fire:              return {VehicleType::FireTruck, VehicleType::Ambulance};
-        case DisasterType::Flood:             return {VehicleType::RescueBoat, VehicleType::Ambulance};
+        case DisasterType::Flood:             return {VehicleType::RescueBoat, VehicleType::Helicopter, VehicleType::Ambulance};
         case DisasterType::RoadAccident:      return {VehicleType::Ambulance, VehicleType::Police};
-        case DisasterType::Storm:             return {VehicleType::Ambulance, VehicleType::HeavyRescue};
-        case DisasterType::Earthquake:        return {VehicleType::Ambulance, VehicleType::HeavyRescue};
+        case DisasterType::Storm:             return {VehicleType::Helicopter, VehicleType::Ambulance};
+        case DisasterType::Earthquake:        return {VehicleType::Ambulance, VehicleType::HeavyRescue, VehicleType::Helicopter};
         case DisasterType::BuildingCollapse:  return {VehicleType::Ambulance, VehicleType::HeavyRescue};
         case DisasterType::HazardousIncident: return {VehicleType::FireTruck, VehicleType::Police};
     }
@@ -95,15 +95,19 @@ int main() {
 
             Vehicle& v = pool.at(idx);
             std::vector<NodeId> path = city.shortestPath(v.location, d.location);
-            Seconds arrival = city.travelTime(v.location, d.location);
+            Seconds arrival = pool.travelSeconds(v, d.location, city);
 
             std::cout << "  [GO] " << v.name << "  (from " << city.nameOf(v.location) << ")\n";
-            std::cout << "       Route   : ";
-            for (size_t i = 0; i < path.size(); ++i) {
-                std::cout << city.nameOf(path[i]);
-                if (i + 1 < path.size()) std::cout << " -> ";
+            if (v.type == VehicleType::Helicopter) {
+                std::cout << "       Route   : direct flight (ignores roads)\n";
+            } else {
+                std::cout << "       Route   : ";
+                for (size_t i = 0; i < path.size(); ++i) {
+                    std::cout << city.nameOf(path[i]);
+                    if (i + 1 < path.size()) std::cout << " -> ";
+                }
+                std::cout << "\n";
             }
-            std::cout << "\n";
             std::cout << "       Arrives : " << arrival << " s  -  ON SCENE\n";
 
             v.state = VehicleState::OnScene;
