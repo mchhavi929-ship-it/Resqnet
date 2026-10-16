@@ -1,6 +1,7 @@
 #include "ResourcePool.h"
 #include <fstream>
 #include <sstream>
+#include <cmath>
 
 static std::string trim(const std::string& s) {
     const char* ws = " \t\r\n";
@@ -11,15 +12,27 @@ static std::string trim(const std::string& s) {
 }
 
 static bool parseVehicleType(const std::string& t, VehicleType& out) {
-    if (t == "Ambulance")      { out = VehicleType::Ambulance; return true; }
-    if (t == "FireTruck")      { out = VehicleType::FireTruck; return true; }
-    if (t == "Police")         { out = VehicleType::Police; return true; }
-    if (t == "RecoveryVehicle"){ out = VehicleType::RecoveryVehicle; return true; }
-    if (t == "HeavyRescue")    { out = VehicleType::HeavyRescue; return true; }
-    if (t == "Helicopter")     { out = VehicleType::Helicopter; return true; }
-    if (t == "RescueBoat")     { out = VehicleType::RescueBoat; return true; }
-    if (t == "ReliefSupply")   { out = VehicleType::ReliefSupply; return true; }
+    if (t == "Ambulance")       { out = VehicleType::Ambulance; return true; }
+    if (t == "FireTruck")       { out = VehicleType::FireTruck; return true; }
+    if (t == "Police")          { out = VehicleType::Police; return true; }
+    if (t == "RecoveryVehicle") { out = VehicleType::RecoveryVehicle; return true; }
+    if (t == "HeavyRescue")     { out = VehicleType::HeavyRescue; return true; }
+    if (t == "Helicopter")      { out = VehicleType::Helicopter; return true; }
+    if (t == "RescueBoat")      { out = VehicleType::RescueBoat; return true; }
+    if (t == "ReliefSupply")    { out = VehicleType::ReliefSupply; return true; }
     return false;
+}
+
+// Helicopter speed in metres per second (about 60 km/h, for the demo)
+static const double HELICOPTER_SPEED_MPS = 16.7;
+
+// Straight-line distance between two junctions, in metres
+static double straightDistance(const CityGraph& city, NodeId a, NodeId b) {
+    const Junction& ja = city.getJunction(a);
+    const Junction& jb = city.getJunction(b);
+    double dx = ja.position.x - jb.position.x;
+    double dy = ja.position.y - jb.position.y;
+    return std::sqrt(dx * dx + dy * dy) * 10.0;   // 1 grid unit = 10 m for the demo
 }
 
 void ResourcePool::addVehicle(const Vehicle& v) {
@@ -38,6 +51,14 @@ const Vehicle& ResourcePool::at(int index) const {
     return vehicles_.at(index);
 }
 
+Seconds ResourcePool::travelSeconds(const Vehicle& v, NodeId target, const CityGraph& city) const {
+    if (v.type == VehicleType::Helicopter) {
+        double metres = straightDistance(city, v.location, target);
+        return static_cast<Seconds>(metres / HELICOPTER_SPEED_MPS);
+    }
+    return city.travelTime(v.location, target);
+}
+
 int ResourcePool::findBestVehicle(const std::vector<VehicleType>& required,
                                   NodeId incidentLocation,
                                   const CityGraph& city) const {
@@ -52,7 +73,7 @@ int ResourcePool::findBestVehicle(const std::vector<VehicleType>& required,
         for (VehicleType t : required) if (t == v.type) { wanted = true; break; }
         if (!wanted) continue;
 
-        Seconds t = city.travelTime(v.location, incidentLocation);
+        Seconds t = travelSeconds(v, incidentLocation, city);
         if (t < bestTime) {
             bestTime = t;
             best = i;
