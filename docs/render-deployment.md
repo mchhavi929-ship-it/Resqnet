@@ -1,9 +1,11 @@
 # Render deployment
 
 The Render Blueprint in `render.yaml` builds the React frontend and starts the
-Node server, which serves both the website and its same-origin API. It creates a
-dispatcher access key in Render; copy that generated value to sign in through
-the **Dispatcher view** button.
+Node server, which serves both the website and its same-origin API.
+
+The **Dispatcher view** is open to anyone who visits the site. Anyone can view
+all reports and approve dispatches; this demo has no dispatcher authentication.
+Do not use it for real emergency operations or sensitive information.
 
 Incident data is held in the server's memory for this demo. It is shared between
 reporters and dispatchers while the service is running, but it is lost whenever
@@ -16,11 +18,9 @@ and select the repository containing `render.yaml`. The service is available
 after the build completes. Render's free web service may sleep when idle; its
 first request after sleeping can take longer while it starts again.
 
-For local development, set a private key of at least 32 bytes and start the
-server:
+For local development, start the server:
 
 ```powershell
-$env:DISPATCHER_ACCESS_KEY = "<replace with a random secret of at least 32 bytes>"
 npm start --prefix server
 ```
 

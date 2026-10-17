@@ -19,12 +19,10 @@ function clientId() {
 async function request<T>(
   path: string,
   options: RequestInit = {},
-  dispatcherKey?: string,
 ): Promise<T> {
   const headers = new Headers(options.headers)
   headers.set("Content-Type", "application/json")
   headers.set("X-Client-Id", clientId())
-  if (dispatcherKey) headers.set("Authorization", `Bearer ${dispatcherKey}`)
 
   let response: Response
   try {
@@ -48,9 +46,12 @@ async function request<T>(
   return (await response.json()) as T
 }
 
-export function getIncidents(dispatcherKey?: string) {
-  const scope = dispatcherKey ? "?scope=dispatcher" : ""
-  return request<Incident[]>(`/api/incidents${scope}`, {}, dispatcherKey)
+export function getIncidents() {
+  return request<Incident[]>("/api/incidents")
+}
+
+export function getDispatcherIncidents() {
+  return request<Incident[]>("/api/incidents?scope=dispatcher")
 }
 
 export function createIncident(incident: IncidentDraft) {
@@ -78,11 +79,9 @@ export function removeIncident(id: number) {
 export function dispatchIncident(
   id: number,
   plan: Pick<Incident, "assignments" | "missingTypes">,
-  dispatcherKey: string,
 ) {
   return request<Incident>(
     `/api/incidents/${id}/dispatch`,
     { method: "POST", body: JSON.stringify(plan) },
-    dispatcherKey,
   )
 }

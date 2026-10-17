@@ -2,12 +2,10 @@ import { createServer } from "node:http"
 import { readFile, stat } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { timingSafeEqual } from "node:crypto"
 
 const directory = path.dirname(fileURLToPath(import.meta.url))
 const frontendDirectory = path.resolve(directory, "../frontend/dist")
 const port = Number.parseInt(process.env.PORT ?? "10000", 10)
-const dispatcherKey = process.env.DISPATCHER_ACCESS_KEY
 const clientIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const junctionCount = 10
@@ -36,9 +34,6 @@ let nextId = 1
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new Error("PORT must be a valid TCP port.")
 }
-if (!dispatcherKey || Buffer.byteLength(dispatcherKey) < 32) {
-  throw new Error("Set DISPATCHER_ACCESS_KEY to a secret of at least 32 bytes.")
-}
 
 function sendJson(response, status, payload) {
   response.writeHead(status, {
@@ -54,18 +49,6 @@ function readClientId(request) {
   return typeof clientId === "string" && clientIdPattern.test(clientId)
     ? clientId
     : null
-}
-
-function isDispatcher(request) {
-  const authorization = request.headers.authorization ?? ""
-  const match = /^Bearer (.+)$/.exec(authorization)
-  if (!match) return false
-
-  const supplied = Buffer.from(match[1])
-  const expected = Buffer.from(dispatcherKey)
-  return (
-    supplied.length === expected.length && timingSafeEqual(supplied, expected)
-  )
 }
 
 async function readBody(request) {
@@ -194,10 +177,6 @@ async function handleApi(request, response, url) {
 
   if (pathname === "/api/incidents" && request.method === "GET") {
     if (searchParams.get("scope") === "dispatcher") {
-      if (!isDispatcher(request)) {
-        sendJson(response, 401, { error: "Dispatcher access key is invalid." })
-        return
-      }
       sendJson(
         response,
         200,
@@ -300,10 +279,6 @@ async function handleApi(request, response, url) {
   const isDispatchRoute = pathname.endsWith("/dispatch")
 
   if (isDispatchRoute && request.method === "POST") {
-    if (!isDispatcher(request)) {
-      sendJson(response, 401, { error: "Dispatcher access key is invalid." })
-      return
-    }
     if (incident.state !== "requested") {
       sendJson(response, 409, {
         error: "Only requested incidents can be dispatched.",

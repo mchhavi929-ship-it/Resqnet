@@ -25,7 +25,6 @@ h2 { font-size: var(--type-card); font-weight: 500; letter-spacing: -.025em; }
 .page-heading { margin-bottom: 32px; }
 .page-heading p, .heading-location { color: var(--text-secondary); font-size: var(--type-body); }
 .page-heading p { line-height: 1.75; max-width: 540px; }
-.dispatcher-access-form { display: flex; flex-direction: column; gap: 16px; max-width: 420px; margin: 0 auto; }
 .eyebrow { font-size: 10px; letter-spacing: .1em; }
 .header-actions > span { color: var(--text-secondary); font-size: var(--type-support); }
 .header-actions .button { min-height: 44px; padding-inline: 16px; font-size: var(--type-support); }

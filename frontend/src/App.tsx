@@ -6,6 +6,7 @@ import { junctions } from "./data/city"
 import {
   createIncident,
   dispatchIncident,
+  getDispatcherIncidents,
   getIncidents,
   removeIncident,
   requestHelp as submitRequests,
@@ -13,7 +14,6 @@ import {
 } from "./lib/api"
 import Button from "./components/Button"
 import Icon from "./components/Icon"
-import Input from "./components/Input"
 import Stepper from "./components/Stepper"
 import LocationPage from "./pages/LocationPage"
 import DetailsPage from "./pages/DetailsPage"
@@ -34,8 +34,6 @@ export default function App() {
   const [autosaveFailed, setAutosaveFailed] = useState(false)
   const [connectionError, setConnectionError] = useState("")
   const [notice, setNotice] = useState("")
-  const [dispatcherKey, setDispatcherKey] = useState("")
-  const [dispatcherKeyInput, setDispatcherKeyInput] = useState("")
   const [dispatcherError, setDispatcherError] = useState("")
   useEffect(() => {
     let active = true
@@ -64,11 +62,11 @@ export default function App() {
     }
   }, [])
   useEffect(() => {
-    if (screen !== 3 || !dispatcherKey) return
+    if (screen !== 3) return
     let active = true
     const refresh = async () => {
       try {
-        const reports = await getIncidents(dispatcherKey)
+        const reports = await getDispatcherIncidents()
         if (active) {
           setDispatcherQueue(reports)
           setDispatcherError("")
@@ -81,12 +79,13 @@ export default function App() {
         }
       }
     }
+    void refresh()
     const timer = window.setInterval(() => void refresh(), 10000)
     return () => {
       active = false
       window.clearInterval(timer)
     }
-  }, [screen, dispatcherKey])
+  }, [screen])
   const hasLocation = location !== null
   const locationName = (id: number) => junctions[id].name
   const navigate = (next: Screen) => {
@@ -101,10 +100,7 @@ export default function App() {
     const back = (e: PopStateEvent) => {
       const next = e.state?.resqnetScreen ?? 0
       setScreen(next === 1 && !hasLocation ? 0 : next)
-      if (next !== 3) {
-        setDispatcherKey("")
-        setDispatcherQueue([])
-      }
+      if (next !== 3) setDispatcherQueue([])
     }
     window.addEventListener("popstate", back)
     return () => window.removeEventListener("popstate", back)
@@ -129,11 +125,11 @@ export default function App() {
   }
   const approve = async (id: number, overrides: Record<string, number>) => {
     const report = dispatcherQueue.find((item) => item.id === id)
-    if (!report || report.state !== "requested" || !dispatcherKey) return
+    if (!report || report.state !== "requested") return
     try {
       const plan = suggestDispatch(report, dispatcherQueue, overrides)
       if (!plan.assignments.length) return
-      const updated = await dispatchIncident(id, plan, dispatcherKey)
+      const updated = await dispatchIncident(id, plan)
       setDispatcherQueue((current) =>
         current.map((item) => (item.id === id ? updated : item)),
       )
@@ -146,24 +142,9 @@ export default function App() {
   }
   const openDispatcher = () => {
     setReturnScreen(screen as 0 | 1 | 2 | 4)
-    setDispatcherKey("")
-    setDispatcherKeyInput("")
     setDispatcherError("")
     setDispatcherQueue([])
     navigate(3)
-  }
-  const connectDispatcher = async () => {
-    try {
-      const reports = await getIncidents(dispatcherKeyInput)
-      setDispatcherQueue(reports)
-      setDispatcherKey(dispatcherKeyInput)
-      setDispatcherKeyInput("")
-      setDispatcherError("")
-    } catch (error) {
-      setDispatcherError(
-        error instanceof Error ? error.message : "Dispatcher sign-in failed.",
-      )
-    }
   }
   const selectLocation = (id: number) => setLocation(id)
   const reset = () => {
@@ -253,7 +234,6 @@ export default function App() {
               variant="secondary"
               onClick={() => {
                 if (screen === 3) {
-                  setDispatcherKey("")
                   setDispatcherQueue([])
                   navigate(returnScreen)
                 } else openDispatcher()
@@ -266,51 +246,17 @@ export default function App() {
         </div>
       </header>
       {screen === 3 ? (
-        dispatcherKey ? (
-          <>
-            <DispatcherPage
-              queue={dispatcherQueue.filter((item) => item.state !== undefined)}
-              onApprove={approve}
-            />
-            {dispatcherError && (
-              <div className="report-notice" role="alert">
-                {dispatcherError}
-              </div>
-            )}
-          </>
-        ) : (
-          <main className="report-page">
-            <div className="page-heading">
-              <h1 id="screen-title" tabIndex={-1}>
-                Dispatcher access
-              </h1>
-              <p>Enter the dispatcher access key to view and approve requests.</p>
+        <>
+          <DispatcherPage
+            queue={dispatcherQueue.filter((item) => item.state !== undefined)}
+            onApprove={approve}
+          />
+          {dispatcherError && (
+            <div className="report-notice" role="alert">
+              {dispatcherError}
             </div>
-            <form
-              className="dispatcher-access-form"
-              onSubmit={(event) => {
-                event.preventDefault()
-                void connectDispatcher()
-              }}
-            >
-              <Input
-                label="Access key"
-                id="dispatcher-key"
-                type="password"
-                autoComplete="current-password"
-                value={dispatcherKeyInput}
-                onChange={(event) => setDispatcherKeyInput(event.target.value)}
-                required
-              />
-              <Button type="submit">Open dispatcher view</Button>
-            </form>
-            {dispatcherError && (
-              <div className="report-notice" role="alert">
-                {dispatcherError}
-              </div>
-            )}
-          </main>
-        )
+          )}
+        </>
       ) : (
         <>
           <Stepper

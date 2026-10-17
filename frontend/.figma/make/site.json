@@ -1,5 +1,9 @@
 {
-  "description": "Simulates emergency dispatch scenarios with a refined dark-mode interface to train responders in managing incidents efficiently and calmly.",
+  "title": "RESQNET | Emergency Response",
+  "description": "Report emergencies and coordinate emergency response across the RESQNET city network.",
+  "icons": {
+    "icon": "/favicon.svg"
+  },
   "robots": {
     "index": false
   },
