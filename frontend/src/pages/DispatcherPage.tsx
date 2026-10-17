@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react"
-import { availableFleet, suggestDispatch } from "../dispatch"
+import {
+  availableFleet,
+  suggestDispatch,
+} from "../dispatch"
 import type { Incident } from "../types"
 import { junctions } from "../data/city"
 import { incidentTypes } from "../data/incidents"
@@ -14,10 +17,17 @@ export default function DispatcherPage({
   queue,
   onApprove,
   dispatchingId,
+  responsePreparationSeconds,
+  priorityScoring,
 }: {
   queue: Incident[]
   onApprove: (id: number, overrides: Record<string, number>) => void
   dispatchingId: number | null
+  responsePreparationSeconds: number
+  priorityScoring: {
+    severityWeight: number
+    peopleAffectedWeight: number
+  }
 }) {
   const [selected, setSelected] = useState<number | null>(null)
   const [focused, setFocused] = useState<number | null>(null)
@@ -41,7 +51,12 @@ export default function DispatcherPage({
   }, [incident?.id])
   const free = availableFleet(queue)
   const plan = incident
-    ? suggestDispatch(incident, queue, manual ? overrides : {})
+    ? suggestDispatch(
+        incident,
+        queue,
+        responsePreparationSeconds,
+        manual ? overrides : {},
+      )
     : null
   return (
     <main className="dispatcher-page">
@@ -144,7 +159,8 @@ export default function DispatcherPage({
       >
         <p className="dispatch-help">
           Select a request, review the suggested response, then approve
-          dispatch. Priority = severity × 10 + people × 0.5.
+          dispatch. Priority = severity × {priorityScoring.severityWeight} +
+          people × {priorityScoring.peopleAffectedWeight}.
         </p>
         {ranked.length === 0 ? (
           <div className="dispatch-empty">
@@ -246,7 +262,9 @@ export default function DispatcherPage({
                   </span>
                 </div>
                 <span className="mono">
-                  {a.seconds === null ? "ETA unavailable" : `${a.seconds} s`}
+                  {a.seconds === null
+                    ? "ETA unavailable"
+                    : `${a.seconds} s incl. ${responsePreparationSeconds} s mobilization`}
                 </span>
               </div>
             ))}

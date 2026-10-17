@@ -1,0 +1,7 @@
+{
+  "responsePreparationSeconds": 60,
+  "priorityScoring": {
+    "severityWeight": 10,
+    "peopleAffectedWeight": 0.5
+  }
+}

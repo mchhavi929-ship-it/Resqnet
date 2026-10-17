@@ -8,10 +8,12 @@ import {
   dispatchIncident,
   getDispatcherIncidents,
   getIncidents,
+  getRuntimeConfig,
   removeIncident,
   requestHelp as submitRequests,
   updateIncident,
 } from "./lib/api"
+import type { RuntimeConfig } from "./lib/api"
 import Button from "./components/Button"
 import Icon from "./components/Icon"
 import Stepper from "./components/Stepper"
@@ -36,6 +38,30 @@ export default function App() {
   const [notice, setNotice] = useState("")
   const [dispatcherError, setDispatcherError] = useState("")
   const [dispatchingId, setDispatchingId] = useState<number | null>(null)
+  const [runtimeConfig, setRuntimeConfig] = useState<RuntimeConfig | null>(null)
+  const [configError, setConfigError] = useState("")
+  useEffect(() => {
+    let active = true
+    void getRuntimeConfig()
+      .then((config) => {
+        if (active) {
+          setRuntimeConfig(config)
+          setConfigError("")
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setConfigError(
+            error instanceof Error
+              ? error.message
+              : "Could not load the server configuration.",
+          )
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [])
   useEffect(() => {
     let active = true
     const refresh = async () => {
@@ -126,11 +152,22 @@ export default function App() {
   }
   const approve = async (id: number, overrides: Record<string, number>) => {
     const report = dispatcherQueue.find((item) => item.id === id)
-    if (!report || report.state !== "requested" || dispatchingId !== null) return
+    if (
+      !report ||
+      report.state !== "requested" ||
+      dispatchingId !== null ||
+      runtimeConfig === null
+    )
+      return
     setDispatchingId(id)
     setDispatcherError("")
     try {
-      const plan = suggestDispatch(report, dispatcherQueue, overrides)
+      const plan = suggestDispatch(
+        report,
+        dispatcherQueue,
+        runtimeConfig.responsePreparationSeconds,
+        overrides,
+      )
       if (!plan.assignments.length) {
         setDispatcherError("No available vehicles can be assigned to this request.")
         return
@@ -254,16 +291,26 @@ export default function App() {
       </header>
       {screen === 3 ? (
         <>
-          {dispatcherError && (
+          {(dispatcherError || configError) && (
             <div className="report-notice" role="alert">
-              {dispatcherError}
+              {dispatcherError || configError}
             </div>
           )}
-          <DispatcherPage
-            queue={dispatcherQueue.filter((item) => item.state !== undefined)}
-            onApprove={approve}
-            dispatchingId={dispatchingId}
-          />
+          {runtimeConfig === null ? (
+            !configError && (
+              <div className="report-notice" role="status">
+                Loading server configuration…
+              </div>
+            )
+          ) : (
+            <DispatcherPage
+              queue={dispatcherQueue.filter((item) => item.state !== undefined)}
+              onApprove={approve}
+              dispatchingId={dispatchingId}
+              responsePreparationSeconds={runtimeConfig.responsePreparationSeconds}
+              priorityScoring={runtimeConfig.priorityScoring}
+            />
+          )}
         </>
       ) : (
         <>
@@ -331,7 +378,19 @@ export default function App() {
                 onRemove={remove}
               />
             )}
-            {screen === 4 && <RequestStatusPage queue={queue} />}
+            {screen === 4 &&
+              (runtimeConfig === null ? (
+                <div className="report-notice" role={configError ? "alert" : "status"}>
+                  {configError || "Loading server configuration…"}
+                </div>
+              ) : (
+                <RequestStatusPage
+                  queue={queue}
+                  responsePreparationSeconds={
+                    runtimeConfig.responsePreparationSeconds
+                  }
+                />
+              ))}
 
             <ReportingActions
               screen={screen}

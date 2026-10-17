@@ -9,6 +9,7 @@ const report: DispatchReport = {
   type: "Fire",
   severity: 7,
   people: 2,
+  priorityScore: 71,
   state: "dispatched",
   dispatchedAt: 100_000,
   assignments: [

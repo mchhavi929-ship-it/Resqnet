@@ -1,16 +1,19 @@
 #include <string.h>
 #include "disaster.h"
 
-double disaster_score(const Disaster* d) {
-    return d->severity * 10.0 + d->peopleAffected * 0.5;
+double disaster_score(const Disaster* d, const DisasterScoreWeights* weights) {
+    return d->severity * weights->severityWeight +
+           d->peopleAffected * weights->peopleAffectedWeight;
 }
 
-int disaster_pop_best(DisasterList* list, Disaster* out) {
+int disaster_pop_best(DisasterList* list, Disaster* out,
+                      const DisasterScoreWeights* weights) {
     if (list->count == 0) return 0;
 
     int best = 0;
     for (int i = 1; i < list->count; ++i) {
-        if (disaster_score(&list->items[i]) > disaster_score(&list->items[best])) best = i;
+        if (disaster_score(&list->items[i], weights) >
+            disaster_score(&list->items[best], weights)) best = i;
     }
 
     *out = list->items[best];

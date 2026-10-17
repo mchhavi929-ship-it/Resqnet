@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url"
 const directory = path.dirname(fileURLToPath(import.meta.url))
 const frontendDirectory = path.resolve(directory, "../frontend/dist")
 const vehiclesFile = path.resolve(directory, "../data/vehicles.txt")
+const configFile = path.resolve(directory, "config.json")
 const port = Number.parseInt(process.env.PORT ?? "10000", 10)
 const clientIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -21,6 +22,34 @@ const incidentTypes = new Set([
 ])
 const maxIncidents = 5000
 const maxIncidentsPerClient = 50
+const config = JSON.parse(await readFile(configFile, "utf8"))
+if (
+  !Number.isInteger(config.responsePreparationSeconds) ||
+  config.responsePreparationSeconds < 0 ||
+  config.responsePreparationSeconds > 3600
+) {
+  throw new Error(
+    "server/config.json must set responsePreparationSeconds to an integer from 0 to 3600.",
+  )
+}
+if (
+  !config.priorityScoring ||
+  !Number.isFinite(config.priorityScoring.severityWeight) ||
+  config.priorityScoring.severityWeight < 0 ||
+  !Number.isFinite(config.priorityScoring.peopleAffectedWeight) ||
+  config.priorityScoring.peopleAffectedWeight < 0 ||
+  (config.priorityScoring.severityWeight === 0 &&
+    config.priorityScoring.peopleAffectedWeight === 0) ||
+  !Number.isFinite(
+    10 * config.priorityScoring.severityWeight +
+      100000 * config.priorityScoring.peopleAffectedWeight,
+  )
+) {
+  throw new Error(
+    "server/config.json must set non-negative priorityScoring weights, with at least one weight greater than zero.",
+  )
+}
+const responsePreparationSeconds = config.responsePreparationSeconds
 const vehicleTypeLabels = new Map([
   ["Ambulance", "Ambulance"],
   ["FireTruck", "Fire truck"],
@@ -136,7 +165,12 @@ function validateIncident(value) {
 
 function publicIncident(incident) {
   const { ownerId, ...result } = incident
-  return result
+  return {
+    ...result,
+    priorityScore:
+      incident.severity * config.priorityScoring.severityWeight +
+      incident.people * config.priorityScoring.peopleAffectedWeight,
+  }
 }
 
 async function serveStatic(request, response, pathname) {
@@ -205,6 +239,14 @@ async function handleApi(request, response, url) {
 
   if (pathname === "/api/health" && request.method === "GET") {
     sendJson(response, 200, { status: "ok" })
+    return
+  }
+
+  if (pathname === "/api/config" && request.method === "GET") {
+    sendJson(response, 200, {
+      responsePreparationSeconds: config.responsePreparationSeconds,
+      priorityScoring: config.priorityScoring,
+    })
     return
   }
 
@@ -356,7 +398,8 @@ async function handleApi(request, response, url) {
         typeof assignment.direct !== "boolean" ||
         (assignment.direct
           ? assignment.type !== "Helicopter" || assignment.seconds !== null
-          : !Number.isFinite(assignment.seconds) || assignment.seconds < 0)
+          : !Number.isFinite(assignment.seconds) ||
+            assignment.seconds < responsePreparationSeconds)
       ) {
         sendJson(response, 400, { error: "Vehicle assignment is invalid." })
         return

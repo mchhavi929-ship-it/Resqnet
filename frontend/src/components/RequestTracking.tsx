@@ -8,10 +8,12 @@ export default function RequestTracking({
   report,
   defaultExpanded = true,
   arrived = false,
+  responsePreparationSeconds,
 }: {
   report: Incident
   defaultExpanded?: boolean
   arrived?: boolean
+  responsePreparationSeconds: number
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const assignments = [...(report.assignments ?? [])].sort(
@@ -96,6 +98,7 @@ export default function RequestTracking({
             key={selected.vehicle}
             assignment={selected}
             dispatchedAt={report.dispatchedAt}
+            responsePreparationSeconds={responsePreparationSeconds}
           />
         ) : (
           <p className="field-help">Waiting for an available response unit.</p>

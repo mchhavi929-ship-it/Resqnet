@@ -5,6 +5,14 @@ type IncidentDraft = Pick<
   "location" | "type" | "severity" | "people"
 >
 
+export type RuntimeConfig = {
+  responsePreparationSeconds: number
+  priorityScoring: {
+    severityWeight: number
+    peopleAffectedWeight: number
+  }
+}
+
 const clientIdKey = "resqnet.client-id.v1"
 
 function clientId() {
@@ -48,6 +56,29 @@ async function request<T>(
 
 export function getIncidents() {
   return request<Incident[]>("/api/incidents")
+}
+
+export async function getRuntimeConfig(): Promise<RuntimeConfig> {
+  const config = await request<RuntimeConfig>("/api/config")
+  if (
+    !Number.isInteger(config.responsePreparationSeconds) ||
+    config.responsePreparationSeconds < 0 ||
+    config.responsePreparationSeconds > 3600 ||
+    !config.priorityScoring ||
+    !Number.isFinite(config.priorityScoring.severityWeight) ||
+    config.priorityScoring.severityWeight < 0 ||
+    !Number.isFinite(config.priorityScoring.peopleAffectedWeight) ||
+    config.priorityScoring.peopleAffectedWeight < 0 ||
+    (config.priorityScoring.severityWeight === 0 &&
+      config.priorityScoring.peopleAffectedWeight === 0) ||
+    !Number.isFinite(
+      10 * config.priorityScoring.severityWeight +
+        100000 * config.priorityScoring.peopleAffectedWeight,
+    )
+  ) {
+    throw new Error("The server returned invalid runtime configuration.")
+  }
+  return config
 }
 
 export function getDispatcherIncidents() {

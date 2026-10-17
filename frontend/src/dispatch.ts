@@ -1,7 +1,7 @@
 import { fleetUnits } from "./data/fleet";
 
 export type Assignment = { vehicle: string; type: string; route: number[]; seconds: number | null; direct: boolean };
-export type DispatchReport = { id: number; location: number; type: string; severity: number; people: number; state?: 'requested' | 'dispatched'; assignments?: Assignment[]; missingTypes?: string[]; dispatchedAt?: number };
+export type DispatchReport = { id: number; location: number; type: string; severity: number; people: number; priorityScore: number; state?: 'requested' | 'dispatched'; assignments?: Assignment[]; missingTypes?: string[]; dispatchedAt?: number };
 export const fleet = fleetUnits.map(({ name, type, locationId }) => ({
   name,
   type,
@@ -39,7 +39,7 @@ export function availableFleet(reports: DispatchReport[]) {
   const busy = new Set(reports.flatMap(r => r.assignments ?? []).map(a => a.vehicle));
   return fleet.filter(v => !busy.has(v.name));
 }
-export function suggestDispatch(report: DispatchReport, reports: DispatchReport[], overrides: Record<string, number> = {}) {
+export function suggestDispatch(report: DispatchReport, reports: DispatchReport[], responsePreparationSeconds: number, overrides: Record<string, number> = {}) {
   const available = availableFleet(reports);
   const assignments: Assignment[] = [];
   const missingTypes: string[] = [];
@@ -53,15 +53,32 @@ export function suggestDispatch(report: DispatchReport, reports: DispatchReport[
     for (const vehicle of candidates.slice(0, wanted)) {
       const direct = type === 'Helicopter';
       const travel = shortestRoute(vehicle.location, report.location);
-      assignments.push({ vehicle: vehicle.name, type, route: direct ? [vehicle.location, report.location] : travel.route, seconds: direct ? null : travel.seconds, direct });
+      assignments.push({
+        vehicle: vehicle.name,
+        type,
+        route: direct ? [vehicle.location, report.location] : travel.route,
+        seconds: direct
+          ? null
+          : travel.seconds + responsePreparationSeconds,
+        direct,
+      });
     }
   }
   return { assignments, missingTypes };
 }
 
-export function routeProgress(assignment: Assignment, elapsed: number) {
-  let remaining = Math.max(0, elapsed);
+export function routeProgress(assignment: Assignment, elapsed: number, responsePreparationSeconds: number) {
+  let remaining = Math.max(0, elapsed - responsePreparationSeconds);
   if (assignment.direct || assignment.seconds === null) return { from: assignment.route[0], to: assignment.route[0], fraction: 0, remaining: null };
+  if (elapsed < responsePreparationSeconds) {
+    const base = assignment.route[0];
+    return {
+      from: base,
+      to: base,
+      fraction: 0,
+      remaining: Math.max(0, Math.ceil(assignment.seconds - elapsed)),
+    };
+  }
   for (let i = 0; i < assignment.route.length - 1; i++) {
     const from = assignment.route[i], to = assignment.route[i + 1];
     const leg = edges.find(([a,b]) => (a === from && b === to) || (a === to && b === from));

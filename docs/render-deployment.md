@@ -12,6 +12,12 @@ website, and API. It has 15 ambulances, 15 fire trucks, 20 police units, and 10
 each of rescue boats, helicopters, and heavy rescue vehicles. Units are
 distributed across the city network for route planning.
 
+Dispatch runtime settings are maintained in `server/config.json`. The Node API
+and C prototype both load the response preparation time and priority-scoring
+weights from this file. The API computes each incident's priority score and
+returns it with the incident; the frontend only displays and sorts by that
+server-provided score. Update this config to change the dispatch policy.
+
 Incident data is held in the server's memory for this demo. It is shared between
 reporters and dispatchers while the service is running, but it is lost whenever
 Render restarts or redeploys the service. Do not use this temporary storage for

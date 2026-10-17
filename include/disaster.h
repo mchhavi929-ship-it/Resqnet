@@ -17,8 +17,14 @@ typedef struct {
     int      count;
 } DisasterList;
 
-double      disaster_score(const Disaster* d);
-int         disaster_pop_best(DisasterList* list, Disaster* out);
+typedef struct {
+    double severityWeight;
+    double peopleAffectedWeight;
+} DisasterScoreWeights;
+
+double      disaster_score(const Disaster* d, const DisasterScoreWeights* weights);
+int         disaster_pop_best(DisasterList* list, Disaster* out,
+                              const DisasterScoreWeights* weights);
 const char* disaster_type_name(int type);
 
 #endif

@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react"
-import { routeProgress, headingDegrees, type Assignment } from "../dispatch"
+import {
+  routeProgress,
+  headingDegrees,
+  type Assignment,
+} from "../dispatch"
 import {
   junctions as desktopJunctions,
   compactJunctions,
@@ -10,9 +14,11 @@ import Icon from "./Icon"
 export default function ResponseTracking({
   assignment: a,
   dispatchedAt,
+  responsePreparationSeconds,
 }: {
   assignment: Assignment
   dispatchedAt?: number
+  responsePreparationSeconds: number
 }) {
   const compact = useCompactLayout()
   const junctions = compact ? compactJunctions : desktopJunctions
@@ -25,7 +31,7 @@ export default function ResponseTracking({
     return () => window.clearInterval(timer)
   }, [a.direct, a.seconds])
   const elapsed = Math.max(0, (now - origin) / 1000)
-  const progress = routeProgress(a, elapsed)
+  const progress = routeProgress(a, elapsed, responsePreparationSeconds)
   const from = junctions[progress.from],
     to = junctions[progress.to]
   const x = from.x + (to.x - from.x) * progress.fraction,
@@ -47,7 +53,9 @@ export default function ResponseTracking({
   const responseTitle = arrived
     ? "Response arrived"
     : `${a.type} response dispatched`
-  const stage = arrived ? 3 : a.direct ? 1 : 2
+  const preparing =
+    !a.direct && elapsed < responsePreparationSeconds
+  const stage = arrived ? 3 : a.direct || preparing ? 1 : 2
   return (
     <section className="response-tracking" aria-label={`${a.vehicle} tracking`}>
       <div className="tracking-hero">
@@ -189,7 +197,9 @@ export default function ResponseTracking({
               ? "At the reported location"
               : a.direct
                 ? "Assigned · Flight ETA unavailable"
-                : "Dispatched · On the way"}
+                : preparing
+                  ? "Dispatch confirmed · Preparing to depart"
+                  : "Dispatched · On the way"}
           </span>
         </div>
         {progress.remaining !== null && (

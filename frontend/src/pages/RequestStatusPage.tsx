@@ -3,8 +3,14 @@ import type { Incident } from "../types"
 import RequestTracking from "../components/RequestTracking"
 import Icon from "../components/Icon"
 import { groupRequests } from "../lib/requestStatus"
-type Props = { queue: Incident[] }
-export default function RequestStatusPage({ queue }: Props) {
+type Props = {
+  queue: Incident[]
+  responsePreparationSeconds: number
+}
+export default function RequestStatusPage({
+  queue,
+  responsePreparationSeconds,
+}: Props) {
   const [now, setNow] = useState(Date.now())
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
@@ -27,6 +33,7 @@ export default function RequestStatusPage({ queue }: Props) {
               key={report.id}
               report={report}
               defaultExpanded={index === 0}
+              responsePreparationSeconds={responsePreparationSeconds}
             />
           ))}
         </section>
@@ -42,6 +49,7 @@ export default function RequestStatusPage({ queue }: Props) {
               key={report.id}
               report={report}
               defaultExpanded={index === 0}
+              responsePreparationSeconds={responsePreparationSeconds}
             />
           ))}
         </section>
@@ -65,6 +73,7 @@ export default function RequestStatusPage({ queue }: Props) {
                 report={report}
                 defaultExpanded={false}
                 arrived
+                responsePreparationSeconds={responsePreparationSeconds}
               />
             ))}
           </div>
