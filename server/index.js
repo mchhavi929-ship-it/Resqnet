@@ -28,6 +28,7 @@ const fleet = new Map([
   ["Boat-B1", "Rescue boat"],
   ["Helicopter-H1", "Helicopter"],
 ])
+const knownVehicleTypes = new Set([...fleet.values(), "Heavy rescue"])
 const incidents = new Map()
 let nextId = 1
 
@@ -345,7 +346,7 @@ async function handleApi(request, response, url) {
     }
     if (
       !Array.isArray(body.missingTypes) ||
-      !body.missingTypes.every((type) => [...fleet.values()].includes(type))
+      !body.missingTypes.every((type) => knownVehicleTypes.has(type))
     ) {
       sendJson(response, 400, { error: "Missing vehicle types are invalid." })
       return

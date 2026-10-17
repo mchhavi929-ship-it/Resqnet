@@ -13,9 +13,11 @@ import LocationMap from "../components/LocationMap"
 export default function DispatcherPage({
   queue,
   onApprove,
+  dispatchingId,
 }: {
   queue: Incident[]
   onApprove: (id: number, overrides: Record<string, number>) => void
+  dispatchingId: number | null
 }) {
   const [selected, setSelected] = useState<number | null>(null)
   const [focused, setFocused] = useState<number | null>(null)
@@ -343,12 +345,14 @@ export default function DispatcherPage({
               <div className="approval-footer">
                 <span>Nothing is dispatched until you approve.</span>
                 <Button
-                  disabled={!plan.assignments.length}
+                  disabled={!plan.assignments.length || dispatchingId !== null}
                   onClick={() =>
                     onApprove(incident.id, manual ? overrides : {})
                   }
                 >
-                  Approve & dispatch
+                  {dispatchingId === incident.id
+                    ? "Dispatching…"
+                    : "Approve & dispatch"}
                   <Icon name="check" size={16} />
                 </Button>
               </div>

@@ -35,6 +35,7 @@ export default function App() {
   const [connectionError, setConnectionError] = useState("")
   const [notice, setNotice] = useState("")
   const [dispatcherError, setDispatcherError] = useState("")
+  const [dispatchingId, setDispatchingId] = useState<number | null>(null)
   useEffect(() => {
     let active = true
     const refresh = async () => {
@@ -125,19 +126,25 @@ export default function App() {
   }
   const approve = async (id: number, overrides: Record<string, number>) => {
     const report = dispatcherQueue.find((item) => item.id === id)
-    if (!report || report.state !== "requested") return
+    if (!report || report.state !== "requested" || dispatchingId !== null) return
+    setDispatchingId(id)
+    setDispatcherError("")
     try {
       const plan = suggestDispatch(report, dispatcherQueue, overrides)
-      if (!plan.assignments.length) return
+      if (!plan.assignments.length) {
+        setDispatcherError("No available vehicles can be assigned to this request.")
+        return
+      }
       const updated = await dispatchIncident(id, plan)
       setDispatcherQueue((current) =>
         current.map((item) => (item.id === id ? updated : item)),
       )
-      setDispatcherError("")
     } catch (error) {
       setDispatcherError(
         error instanceof Error ? error.message : "Could not dispatch this incident.",
       )
+    } finally {
+      setDispatchingId(null)
     }
   }
   const openDispatcher = () => {
@@ -247,15 +254,16 @@ export default function App() {
       </header>
       {screen === 3 ? (
         <>
-          <DispatcherPage
-            queue={dispatcherQueue.filter((item) => item.state !== undefined)}
-            onApprove={approve}
-          />
           {dispatcherError && (
             <div className="report-notice" role="alert">
               {dispatcherError}
             </div>
           )}
+          <DispatcherPage
+            queue={dispatcherQueue.filter((item) => item.state !== undefined)}
+            onApprove={approve}
+            dispatchingId={dispatchingId}
+          />
         </>
       ) : (
         <>
