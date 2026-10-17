@@ -64,6 +64,16 @@ input, select { accent-color: var(--ink); }
 .map-only-network .network-map-footer { padding: 14px 32px 22px; font-size: 11px; color: var(--text-secondary); }
 .selection-network .network-selected-ring { stroke-opacity: .55; }
 .reporter-map .network-node:hover .network-junction-shell { stroke: var(--ink); }
+.live-vehicle-marker { pointer-events: none; transition: transform 1s linear; }
+.live-vehicle-marker circle { fill: var(--surface); stroke: var(--route); stroke-width: 2; }
+.live-vehicle-marker path { fill: var(--route); }
+.live-vehicle-marker.arrived circle { stroke: var(--muted); }
+.live-vehicle-marker.arrived path { fill: var(--muted); }
+.live-vehicle-marker.preparing circle { stroke: var(--warning); }
+.live-vehicle-marker.preparing path { fill: var(--warning); }
+@media (prefers-reduced-motion: reduce) {
+  .live-vehicle-marker { transition: none; }
+}
 
 /* Remove repeated labels and let the choices and measures carry the hierarchy. */
 .workspace-types, .workspace-measures { padding: var(--card-padding); }

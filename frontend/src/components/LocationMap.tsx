@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { Incident } from "../types"
+import { routeProgress } from "../dispatch"
 import {
   junctions as desktopJunctions,
   compactJunctions,
@@ -12,16 +13,60 @@ export default function LocationMap({
   onSelect,
   queue,
   detailed = false,
+  responsePreparationSeconds = 0,
 }: {
   selected: number | null
   onSelect: (id: number) => void
   queue: Incident[]
   detailed?: boolean
+  responsePreparationSeconds?: number
 }) {
   const compact = useCompactLayout()
   const junctions = compact ? compactJunctions : desktopJunctions
   const [hovered, setHovered] = useState<number | null>(null)
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    if (!detailed) return
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [detailed])
   const active = detailed ? null : (selected ?? hovered)
+  const trackedVehicles = detailed
+    ? queue.flatMap((report) => {
+        if (
+          report.state !== "dispatched" ||
+          typeof report.dispatchedAt !== "number" ||
+          !Number.isFinite(report.dispatchedAt)
+        ) {
+          return []
+        }
+        const elapsed = Math.max(0, (now - report.dispatchedAt) / 1000)
+        return (report.assignments ?? []).flatMap((assignment) => {
+          if (
+            assignment.direct ||
+            assignment.seconds === null ||
+            assignment.route.length === 0
+          ) {
+            return []
+          }
+          const progress = routeProgress(
+            assignment,
+            elapsed,
+            responsePreparationSeconds,
+          )
+          const from = junctions[progress.from]
+          const to = junctions[progress.to]
+          return [{
+            vehicle: assignment.vehicle,
+            x: from.x + (to.x - from.x) * progress.fraction,
+            y: from.y + (to.y - from.y) * progress.fraction,
+            arrived: progress.remaining === 0,
+            preparing:
+              progress.remaining !== 0 && elapsed < responsePreparationSeconds,
+          }]
+        })
+      })
+    : []
   // This unweighted connection only illustrates selection; dispatch routing is deferred.
   const connection: number[] = []
   if (active !== null) {
@@ -63,7 +108,11 @@ export default function LocationMap({
             <svg
               className="dispatch-map"
               viewBox={compact ? "0 0 315 350" : "-20 -15 570 415"}
-              aria-label="Interactive city map. Select a junction to see its connection to Base Station."
+              aria-label={
+                detailed
+                  ? "City map showing incident locations and moving dispatched ground vehicles."
+                  : "Interactive city map. Select a junction to see its connection to Base Station."
+              }
             >
               <defs>
                 <pattern
@@ -283,10 +332,46 @@ export default function LocationMap({
                   </g>
                 )
               })}
+              {trackedVehicles.map((vehicle) => (
+                <g
+                  key={vehicle.vehicle}
+                  className={`live-vehicle-marker ${
+                    vehicle.arrived ? "arrived" : ""
+                  } ${vehicle.preparing ? "preparing" : ""}`}
+                  transform={`translate(${vehicle.x} ${vehicle.y})`}
+                  aria-label={`${vehicle.vehicle}, ${
+                    vehicle.arrived
+                      ? "arrived"
+                      : vehicle.preparing
+                        ? "preparing to depart"
+                        : "en route"
+                  }`}
+                >
+                  <title>
+                    {vehicle.vehicle} · {vehicle.arrived
+                      ? "Arrived"
+                      : vehicle.preparing
+                        ? "Preparing to depart"
+                        : "En route"}
+                  </title>
+                  <circle r="11" />
+                  <path d="M-7 2h14l-1.5-5h-11zM-5-4h2v2h-2zm7 0h2v2H2zM-5 3a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m7 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
+                </g>
+              ))}
             </svg>
           </div>
           <div className="network-map-footer">
-            <span>Tap a junction to select a location</span>
+            {detailed ? (
+              <span>
+                {trackedVehicles.length > 0
+                  ? `${trackedVehicles.length} dispatched ground ${
+                      trackedVehicles.length === 1 ? "unit" : "units"
+                    } · positions update live (simulated, not GPS)`
+                  : "Dispatched ground units will appear and move here · simulated, not GPS"}
+              </span>
+            ) : (
+              <span>Tap a junction to select a location</span>
+            )}
             <span className="network-mobile-help">Swipe to explore · </span>
             <span>Not to scale</span>
           </div>

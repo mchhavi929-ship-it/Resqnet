@@ -10,9 +10,16 @@ import { fleetUnits } from "../data/fleet"
 import { priorityScore, severityClass } from "../lib/incident"
 import Icon from "../components/Icon"
 import Button from "../components/Button"
-import Badge from "../components/Badge"
 import Card from "../components/Card"
 import LocationMap from "../components/LocationMap"
+
+type FleetSummary = {
+  type: string
+  icon: (typeof fleetUnits)[number]["icon"]
+  total: number
+  available: number
+}
+
 export default function DispatcherPage({
   queue,
   onApprove,
@@ -50,6 +57,17 @@ export default function DispatcherPage({
     setManual(false)
   }, [incident?.id])
   const free = availableFleet(queue)
+  const availableNames = new Set(free.map((unit) => unit.name))
+  const fleetSummary = fleetUnits.reduce<FleetSummary[]>((summary, unit) => {
+    let typeSummary = summary.find((entry) => entry.type === unit.type)
+    if (!typeSummary) {
+      typeSummary = { type: unit.type, icon: unit.icon, total: 0, available: 0 }
+      summary.push(typeSummary)
+    }
+    typeSummary.total += 1
+    if (availableNames.has(unit.name)) typeSummary.available += 1
+    return summary
+  }, [])
   const plan = incident
     ? suggestDispatch(
         incident,
@@ -121,6 +139,7 @@ export default function DispatcherPage({
               setFocused(ranked.find((i) => i.location === id)?.id ?? null)
             }}
             queue={queue}
+            responsePreparationSeconds={responsePreparationSeconds}
           />
           <p className="dispatch-help">
             Markers show highest severity at each location. Select a report
@@ -129,25 +148,18 @@ export default function DispatcherPage({
         </Card>
         <Card
           eyebrow="FLEET"
-          title={`${free.length} units available`}
+          title={`${free.length} of ${fleetUnits.length} units available`}
           className="dispatch-fleet"
         >
-          {fleetUnits.map((unit) => (
-            <div className="dispatcher-fleet-unit" key={unit.name}>
-              <Icon name={unit.icon} />
+          {fleetSummary.map((group) => (
+            <div className="dispatcher-fleet-unit" key={group.type}>
+              <Icon name={group.icon} />
               <div>
-                <strong>{unit.name}</strong>
+                <strong>{group.type}</strong>
                 <span>
-                  {unit.type} · {unit.location}
+                  {group.available} available · {group.total} total
                 </span>
               </div>
-              <Badge
-                status={
-                  free.some((v) => v.name === unit.name)
-                    ? "Available"
-                    : "Dispatched"
-                }
-              />
             </div>
           ))}
         </Card>
