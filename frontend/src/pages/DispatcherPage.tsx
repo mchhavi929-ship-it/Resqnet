@@ -5,11 +5,11 @@ import {
 } from "../dispatch"
 import type { Incident } from "../types"
 import { junctions } from "../data/city"
-import { incidentTypes } from "../data/incidents"
 import { fleetUnits } from "../data/fleet"
 import { priorityScore, severityClass } from "../lib/incident"
 import Icon from "../components/Icon"
 import Button from "../components/Button"
+import Badge from "../components/Badge"
 import Card from "../components/Card"
 import LocationMap from "../components/LocationMap"
 
