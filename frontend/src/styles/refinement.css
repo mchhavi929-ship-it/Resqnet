@@ -1,0 +1,323 @@
+/* RESQNET refinement layer: keep brand colours, improve hierarchy and legibility. */
+:root {
+  --text-secondary: color-mix(in srgb, var(--muted) 78%, var(--ink));
+  --border-emphasis: color-mix(in srgb, var(--ink) 21%, var(--page));
+  --border-selected: color-mix(in srgb, var(--ink) 58%, var(--page));
+  --route: #4cc3d9;
+  --warning: #d4a24c;
+  --card-radius: 24px;
+  --card-padding: 32px;
+  --card-shadow: 0 12px 48px -24px rgb(0 0 0 / 42%);
+  --type-page: 36px;
+  --type-card: 20px;
+  --type-body: 14px;
+  --type-support: 12px;
+  --control-height: 52px;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1 { font-size: var(--type-page); font-weight: 500; letter-spacing: -.045em; }
+h2 { font-size: var(--type-card); font-weight: 500; letter-spacing: -.025em; }
+.page-heading { margin-bottom: 32px; }
+.page-heading p, .heading-location { color: var(--text-secondary); font-size: var(--type-body); }
+.page-heading p { line-height: 1.75; max-width: 540px; }
+.dispatcher-access-form { display: flex; flex-direction: column; gap: 16px; max-width: 420px; margin: 0 auto; }
+.eyebrow { font-size: 10px; letter-spacing: .1em; }
+.header-actions > span { color: var(--text-secondary); font-size: var(--type-support); }
+.header-actions .button { min-height: 44px; padding-inline: 16px; font-size: var(--type-support); }
+
+/* Preserve the step capsule while making its labels easy to target. */
+.stepper { padding: 6px 20px; min-height: 60px; }
+.step { min-height: 44px; font-size: 12px; }
+.step:disabled { opacity: 1; color: var(--muted); }
+.step:not(:disabled):hover { color: var(--ink); }
+.step:focus-visible { outline-offset: 2px; border-radius: 8px; }
+
+.card { padding: var(--card-padding); }
+.card-heading h2 { font-size: var(--type-card); }
+.button { min-height: var(--control-height); font-size: 13px; border-radius: 12px; }
+.button--secondary { border-color: var(--border-emphasis); }
+.button--secondary:hover:not(:disabled) { border-color: var(--border-selected); }
+.button--quiet { min-height: 44px; font-size: 12px; }
+.button--quiet:hover { background: transparent; }
+.button:disabled { opacity: .42; }
+summary:focus-visible, select:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+input, select { accent-color: var(--ink); }
+.field-help, .dispatch-help, .resource-placeholder { font-size: var(--type-support); color: var(--text-secondary); }
+
+/* One calm map canvas, with a strong selection and readable place names. */
+.location-only { box-shadow: var(--card-shadow); }
+.map-selection-heading { padding: 26px 32px 8px; align-items: center; }
+.map-selection-heading h2 { font-size: 21px; }
+.map-selection-heading .eyebrow { margin-bottom: 8px; }
+.location-selected-label { color: var(--text-secondary); font-size: 12px; }
+.location-only[data-selected="true"] { border-color: var(--border-emphasis); }
+.network-node-label { font-size: 12px; }
+.network-node-id { font-size: 9px; }
+.map-only-network .dispatch-map { max-width: 820px; }
+.map-only-network .network-map-footer { padding: 14px 32px 22px; font-size: 11px; color: var(--text-secondary); }
+.selection-network .network-selected-ring { stroke-opacity: .55; }
+.reporter-map .network-node:hover .network-junction-shell { stroke: var(--ink); }
+
+/* Remove repeated labels and let the choices and measures carry the hierarchy. */
+.workspace-types, .workspace-measures { padding: var(--card-padding); }
+.workspace-section-heading { align-items: flex-start; }
+.workspace-section-help { font-size: var(--type-support); color: var(--text-secondary); line-height: 1.7; margin-top: 8px; }
+.incident-workspace h2 { font-size: 19px; }
+.incident-tiles { margin-top: 24px; gap: 12px; }
+.incident-tile { border-color: var(--line); padding: 20px; min-height: 108px; border-radius: 14px; }
+.incident-tile > svg { color: var(--text-secondary); }
+.incident-tile > span:not(.tile-check) { font-size: 14px; color: var(--text-secondary); }
+.incident-tile:hover { border-color: var(--border-selected); background: var(--raised); }
+.incident-tile.is-selected { border-color: var(--ink); background: var(--raised); }
+.incident-tile.is-selected > svg, .incident-tile.is-selected > span:not(.tile-check) { color: var(--ink); }
+.tile-check { width: 17px; height: 17px; right: 14px; top: 14px; }
+.incident-tile:last-child { min-height: 76px; padding-right: 48px; }
+.severity-readout { margin-top: 16px; }
+.measure-prompt { color: var(--text-secondary); font-size: 12px; }
+.workspace-severity .severity-segments button { height: 48px; border-radius: 9px; }
+.severity-segments button.chosen { border-color: var(--border-selected); }
+.range-labels { font-size: 11px; color: var(--text-secondary); }
+.people-number > span { font-size: 13px; color: var(--text-secondary); }
+.people-steppers button { width: 48px; height: 48px; border-radius: 12px; }
+.people-number input:focus-visible { outline-offset: 5px; }
+.slider-shell, .slider-shell input { height: 44px; }
+.workspace-people .field-help { color: var(--text-secondary); font-size: 12px; }
+
+/* Review is a readable set of receipts; status belongs to the header, not a hero. */
+.review-meta { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 0 4px 2px; font-size: 12px; color: var(--text-secondary); }
+.review-meta > span:last-child { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.public-review .public-report, .public-review .public-report:last-child { padding: 26px 28px; }
+.public-report-heading h2 { font-size: 19px; }
+.public-report-heading .button { font-size: 12px; min-height: 44px; }
+.public-report dl { margin-top: 20px; }
+.public-report dt { font-size: 12px; color: var(--text-secondary); }
+.public-report dd { font-size: 14px; }
+.review-report-state { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
+.severity-badge { line-height: 1.5; }
+.wizard-actions { padding-block: 20px; margin-top: 24px; }
+.step-caption, .compact-report { color: var(--text-secondary); font-size: 12px; line-height: 1.8; }
+.report-next-action .compact-report { max-width: 570px; }
+.compact-report small { font-size: 11px; }
+
+/* Active responses have presence; history stays quiet without fading its text. */
+.tracking-request-card .response-pending {
+  padding-block: 20px 24px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.request-group { gap: 14px; }
+.request-group-heading { padding: 0 4px 4px; }
+.request-group-heading h2 { font-size: 17px; }
+.request-group-heading > span { font-size: 12px; color: var(--text-secondary); }
+.request-card--active, .request-card--waiting { border-color: var(--border-emphasis); }
+.tracking-request-card:has(> .request-record[open]) { box-shadow: var(--card-shadow); border-color: var(--border-selected); }
+.request-record-summary { padding: 22px 28px; min-height: 88px; }
+.request-record-place strong { font-size: 15px; }
+.request-record-place > span { font-size: 12px; color: var(--text-secondary); }
+.request-record-state { font-size: 12px; color: var(--text-secondary); }
+.request-record-chevron { margin-left: 10px; opacity: .8; }
+.request-record .tracking-hero h2, .request-record .waiting-response h2 { font-size: 20px; font-weight: 500; }
+.request-record .tracking-hero p, .request-record .waiting-response p { color: var(--text-secondary); font-size: 12px; line-height: 1.8; }
+.response-progress small { font-size: 11px; color: var(--text-secondary); max-width: 120px; }
+.tracking-map-disclosure > summary, .other-response-units > summary { color: var(--text-secondary); font-size: 12px; min-height: 52px; }
+.tracking-unit-footer > div > span { color: var(--text-secondary); font-size: 12px; }
+.tracking-exact-eta { font-size: 23px; }
+.tracking-exact-eta small { font-size: 10px; color: var(--text-secondary); }
+.arrived-history { margin-top: 20px; padding-top: 10px; }
+.arrived-history > summary { font-size: 13px; color: var(--text-secondary); min-height: 64px; }
+.arrived-history .request-card--arrived { background: var(--page); box-shadow: none; border-color: var(--line); }
+.arrived-history .request-record-summary { min-height: 76px; }
+.arrived-history .request-record-place strong { font-size: 14px; }
+.local-workflow-note { font-size: 11px; line-height: 1.8; max-width: 640px; color: var(--muted); }
+
+/* Operator detail stays in operations, with the same card rhythm and controls. */
+.dispatcher-title h1 { font-size: var(--type-page); }
+.dispatcher-title p, .dispatcher-standby { color: var(--text-secondary); font-size: 13px; }
+.dispatcher-page .card { padding: 28px; }
+.dispatch-stats { padding: 26px 28px; }
+.dispatch-stats .eyebrow { font-size: 10px; }
+.dispatcher-report { padding: 18px 16px; gap: 20px; min-height: 84px; }
+.dispatcher-report-name strong { font-size: 14px; }
+.dispatcher-report-name > span { color: var(--text-secondary); font-size: 12px; }
+.dispatcher-report.active { background: var(--raised); border-radius: 10px; outline: 1px solid var(--border-emphasis); outline-offset: -1px; }
+.dispatcher-fleet-unit strong { font-size: 13px; }
+.dispatcher-fleet-unit > div > span { font-size: 11px; color: var(--text-secondary); }
+.dispatcher-fleet-unit .badge, .dispatcher-report .badge { font-size: 11px; padding: 4px 8px; }
+.dispatch-order-word { color: var(--text-secondary); font-size: 11px; }
+.manual-unit-row { min-height: 80px; }
+.manual-unit-row > div:first-child > span { color: var(--text-secondary); font-size: 11px; }
+.unit-count-stepper input { font-size: 16px; }
+.unit-count-stepper button { width: 48px; height: 48px; }
+.unit-count-stepper input { height: 48px; }
+.approval-vehicle > div > span { color: var(--text-secondary); font-size: 12px; }
+.approval-footer { padding-top: 20px; border-top: 1px solid var(--line); }
+.approval-footer > span { color: var(--text-secondary); font-size: 12px; line-height: 1.7; }
+.approval-warning, .fleet-gap { font-size: 12px; }
+
+@media (max-width: 1000px) {
+  .workspace-types, .workspace-measures { padding: 26px; }
+  .incident-tile { padding: 18px; }
+  .incident-tile > span:not(.tile-check) { font-size: 13px; }
+  .dispatcher-columns { gap: 20px; }
+}
+
+@media (max-width: 760px) {
+  :root { --card-radius: 20px; --card-padding: 24px; --type-page: 30px; }
+  .report-page, .dispatcher-page { padding-inline: 20px; }
+  .header-actions .button { font-size: 11px; min-height: 44px; padding-inline: 12px; }
+  .stepper { padding: 6px 14px; min-height: 58px; margin-top: 24px; }
+  .step, .step.current { font-size: 12px; gap: 7px; min-height: 44px; }
+  .step:not(:last-child):after { width: 14px; }
+  .page-heading { margin-bottom: 28px; }
+  .page-heading p, .heading-location { font-size: 13px; }
+  .heading-location .button { min-height: 44px; font-size: 12px; }
+  .map-selection-heading { padding: 24px 20px 10px; align-items: flex-start; }
+  .map-selection-heading h2 { font-size: 19px; }
+  .location-selected-label { font-size: 11px; padding-top: 4px; }
+  .map-only-network .network-map-footer { padding: 14px 20px 18px; font-size: 10px; }
+  .workspace-types, .workspace-measures { padding: 26px 20px; }
+  .incident-workspace h2 { font-size: 18px; }
+  .incident-tiles { margin-top: 20px; gap: 10px; }
+  .incident-tile { padding: 18px; min-height: 104px; }
+  .incident-tile > span:not(.tile-check) { font-size: 13px; }
+  .workspace-severity .severity-segments { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
+  .workspace-severity .severity-segments button { height: 48px; font-size: 14px; }
+  .range-labels { font-size: 12px; }
+  .people-steppers { gap: 8px; }
+  .people-steppers button { width: 48px; height: 48px; }
+  .people-number input { font-size: 52px; max-width: 170px; }
+  .public-review .public-report, .public-review .public-report:last-child { padding: 24px 20px; }
+  .public-report-heading { align-items: center; gap: 12px; flex-wrap: wrap; }
+  .public-report-heading h2 { font-size: 18px; }
+  .public-report-heading > div { gap: 16px; }
+  .public-report dt { width: 100px; font-size: 12px; }
+  .public-report dd { font-size: 13px; }
+  .review-meta { font-size: 12px; gap: 12px; flex-wrap: wrap; }
+  .review-meta > span:last-child { font-size: 10px; }
+  .wizard-actions { padding: 16px 0 calc(16px + env(safe-area-inset-bottom)); align-items: center; }
+  .button { font-size: 13px; min-height: 52px; }
+  .step-caption { font-size: 11px; }
+  .review-buttons .button { font-size: 12px; padding-inline: 14px; }
+  .report-next-action .compact-report { font-size: 12px; line-height: 1.8; padding-bottom: 8px; }
+  .request-group-heading h2 { font-size: 16px; }
+  .request-group-heading > span { font-size: 11px; }
+  .request-record-summary { padding: 22px 20px; gap: 12px; align-items: flex-start; }
+  .request-record-place strong { font-size: 14px; line-height: 1.5; }
+  .request-record-place > span { font-size: 11px; line-height: 1.6; align-items: flex-start; }
+  .request-record-place > span > svg { flex-shrink: 0; margin-top: 2px; }
+  .request-record-state { font-size: 11px; gap: 5px; padding-top: 3px; }
+  .request-record-chevron { margin-left: 2px; }
+  .request-record .tracking-hero h2, .request-record .waiting-response h2 { font-size: 19px; }
+  .request-record .tracking-hero p, .request-record .waiting-response p { font-size: 12px; }
+  .response-progress small { font-size: 10px; max-width: 72px; }
+  .tracking-unit-footer > div > span { font-size: 11px; }
+  .tracking-exact-eta { font-size: 20px; }
+  .tracking-map-disclosure > summary, .other-response-units > summary { padding-block: 18px; min-height: 56px; }
+  .dispatcher-title h1 { font-size: 30px; }
+  .dispatcher-title p, .dispatcher-standby { font-size: 12px; }
+  .dispatcher-page .card { padding: 24px 20px; }
+  .dispatch-stats { padding: 24px 16px; gap: 10px; }
+  .dispatch-stats .eyebrow { font-size: 9px; letter-spacing: .05em; line-height: 1.7; }
+  .dispatcher-report { gap: 10px; padding: 18px 12px; }
+  .dispatcher-report-name strong { font-size: 13px; }
+  .dispatcher-report-name > span { font-size: 11px; }
+  .dispatcher-fleet-unit > div > span { font-size: 11px; }
+  .approval-vehicle { flex-wrap: wrap; }
+  .approval-vehicle > div > span { font-size: 11px; }
+  .unit-count-stepper button { width: 44px; }
+}
+
+@media (max-width: 380px) {
+  .request-record-summary { flex-wrap: wrap; gap: 12px; }
+  .request-record-state { width: 100%; padding-top: 0; }
+  .request-record-state .request-record-chevron { margin-left: auto; }
+  .review-buttons .button { padding-inline: 11px; font-size: 11px; }
+  .step, .step.current { font-size: 11px; }
+  .people-number input { max-width: 140px; }
+}
+
+@media (prefers-contrast: more) {
+  :root { --text-secondary: var(--ink); --border-emphasis: var(--muted); }
+  .card, .location-only, .incident-workspace { border-color: var(--muted); }
+}
+
+/* Phone layouts: fit the whole map and put dispatch actions before context. */
+@media (max-width: 760px) {
+  .location-only, .incident-workspace, .request-group, .request-status-card,
+  .dispatcher-columns, .dispatcher-columns > .card, .dispatch-queue,
+  .workspace-types, .workspace-measures { min-width: 0; }
+  .map-selection-heading { flex-wrap: wrap; gap: 12px; }
+  .map-selection-heading > div { min-width: 0; }
+  .map-only-network .dispatch-map,
+  .dispatch-map-card .dispatch-map {
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+  }
+  .network-scroll { overflow-x: hidden; }
+  .network-node-label { font-size: 12px; }
+  .network-node-id { font-size: 8px; }
+  .map-only-network .network-mobile-help { display: none; }
+  .map-only-network .network-map-footer > span:first-child { display: inline; }
+  .map-only-network .network-map-footer { align-items: flex-start; gap: 12px; }
+  .tracking-map-main > svg { min-width: 0; max-width: 100%; max-height: none; }
+  .tracking-map-scroll text { font-size: 11px; }
+  .tracking-map-main { overflow-x: hidden; }
+  .people-readout { gap: 12px; }
+  .people-number { flex: 1; min-width: 0; }
+  .people-number input { width: 100%; max-width: 100%; }
+  .people-steppers { flex-shrink: 0; }
+  .public-report dl > div { min-width: 0; }
+  .public-report dd { min-width: 0; overflow-wrap: anywhere; }
+  .review-buttons { flex-wrap: wrap; }
+  .tracking-unit-footer > div { min-width: 0; }
+  .tracking-unit-footer strong { overflow-wrap: anywhere; }
+  .tracking-exact-eta { flex-shrink: 0; }
+  .other-response-units .button { white-space: normal; text-align: left; min-height: 48px; height: auto; padding-block: 10px; }
+  .dispatcher-page { display: flex; flex-direction: column; }
+  .dispatcher-title { order: 0; }
+  .dispatch-stats { order: 1; }
+  .dispatcher-page > .dispatch-queue { order: 2; }
+  .dispatcher-columns { order: 3; }
+  .dispatch-stats .eyebrow { min-height: 32px; }
+  .dispatcher-report {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+    gap: 8px 12px;
+  }
+  .dispatcher-rank { grid-column: 1; grid-row: 1 / span 2; }
+  .dispatcher-report-name { grid-column: 2; grid-row: 1 / span 2; }
+  .dispatcher-score { grid-column: 3; grid-row: 1; text-align: right; }
+  .dispatcher-report > .badge { grid-column: 3; grid-row: 2; justify-self: end; }
+  .dispatcher-report-name { overflow-wrap: anywhere; }
+  .approval-heading > div { min-width: 0; }
+  .approval-vehicle > div { min-width: 0; }
+  .approval-vehicle > div > span { overflow-wrap: anywhere; }
+  .manual-unit-row > div:first-child { min-width: 0; }
+  .manual-unit-row strong { overflow-wrap: anywhere; }
+  .unit-count-stepper { flex-shrink: 0; }
+  .approval-footer > .button { white-space: normal; height: auto; min-height: 52px; padding-block: 12px; }
+}
+
+@media (max-width: 380px) {
+  .report-page, .dispatcher-page { padding-inline: 16px; }
+  .header-inner { padding-inline: 20px; }
+  .severity-readout { flex-wrap: wrap; gap: 8px; }
+  .severity-readout > .measure-number { white-space: nowrap; }
+  .review-buttons { width: 100%; }
+  .review-buttons > .button { flex: 1; }
+  .wizard-actions:has(> .review-buttons) > div:first-child { width: 100%; }
+  .tracking-unit-footer { flex-wrap: wrap; }
+  .tracking-exact-eta { margin-left: auto; }
+  .request-group-heading { align-items: baseline; flex-wrap: wrap; gap: 6px 12px; }
+}
