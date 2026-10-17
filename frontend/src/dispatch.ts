@@ -1,13 +1,12 @@
+import { fleetUnits } from "./data/fleet";
+
 export type Assignment = { vehicle: string; type: string; route: number[]; seconds: number | null; direct: boolean };
 export type DispatchReport = { id: number; location: number; type: string; severity: number; people: number; state?: 'requested' | 'dispatched'; assignments?: Assignment[]; missingTypes?: string[]; dispatchedAt?: number };
-export const fleet = [
-  { name: 'Ambulance-A1', type: 'Ambulance', location: 0 },
-  { name: 'Ambulance-A2', type: 'Ambulance', location: 3 },
-  { name: 'FireTruck-F1', type: 'Fire truck', location: 0 },
-  { name: 'Police-P1', type: 'Police', location: 2 },
-  { name: 'Boat-B1', type: 'Rescue boat', location: 5 },
-  { name: 'Helicopter-H1', type: 'Helicopter', location: 0 },
-];
+export const fleet = fleetUnits.map(({ name, type, locationId }) => ({
+  name,
+  type,
+  location: locationId,
+}));
 const requirements: Record<string, string[]> = {
   Fire: ['Fire truck', 'Ambulance'], Flood: ['Rescue boat', 'Helicopter', 'Ambulance'],
   Earthquake: ['Ambulance', 'Heavy rescue', 'Helicopter'], 'Road accident': ['Ambulance', 'Police'],

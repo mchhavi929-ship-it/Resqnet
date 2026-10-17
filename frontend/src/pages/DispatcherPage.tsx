@@ -75,7 +75,7 @@ export default function DispatcherPage({
         <div>
           <span className="eyebrow">VEHICLES AVAILABLE</span>
           <strong className="mono">
-            {free.length} <small>/ 6</small>
+            {free.length} <small>/ {fleetUnits.length}</small>
           </strong>
         </div>
       </div>
@@ -135,10 +135,6 @@ export default function DispatcherPage({
               />
             </div>
           ))}
-          <p className="fleet-gap">
-            <Icon name="alert" size={14} />
-            No heavy rescue unit in the fleet.
-          </p>
         </Card>
       </div>
       <Card

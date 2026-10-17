@@ -7,6 +7,11 @@ The **Dispatcher view** is open to anyone who visits the site. Anyone can view
 all reports and approve dispatches; this demo has no dispatcher authentication.
 Do not use it for real emergency operations or sensitive information.
 
+The fleet in `data/vehicles.txt` is the single source used by the C prototype,
+website, and API. It has 15 ambulances, 15 fire trucks, 20 police units, and 10
+each of rescue boats, helicopters, and heavy rescue vehicles. Units are
+distributed across the city network for route planning.
+
 Incident data is held in the server's memory for this demo. It is shared between
 reporters and dispatchers while the service is running, but it is lost whenever
 Render restarts or redeploys the service. Do not use this temporary storage for

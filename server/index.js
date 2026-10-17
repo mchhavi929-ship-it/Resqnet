@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url"
 
 const directory = path.dirname(fileURLToPath(import.meta.url))
 const frontendDirectory = path.resolve(directory, "../frontend/dist")
+const vehiclesFile = path.resolve(directory, "../data/vehicles.txt")
 const port = Number.parseInt(process.env.PORT ?? "10000", 10)
 const clientIdPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -20,15 +21,46 @@ const incidentTypes = new Set([
 ])
 const maxIncidents = 5000
 const maxIncidentsPerClient = 50
-const fleet = new Map([
-  ["Ambulance-A1", "Ambulance"],
-  ["Ambulance-A2", "Ambulance"],
-  ["FireTruck-F1", "Fire truck"],
-  ["Police-P1", "Police"],
-  ["Boat-B1", "Rescue boat"],
-  ["Helicopter-H1", "Helicopter"],
+const vehicleTypeLabels = new Map([
+  ["Ambulance", "Ambulance"],
+  ["FireTruck", "Fire truck"],
+  ["Police", "Police"],
+  ["RescueBoat", "Rescue boat"],
+  ["Helicopter", "Helicopter"],
+  ["HeavyRescue", "Heavy rescue"],
 ])
-const knownVehicleTypes = new Set([...fleet.values(), "Heavy rescue"])
+const vehiclesText = await readFile(vehiclesFile, "utf8")
+const fleet = new Map()
+const vehicleIds = new Set()
+for (const line of vehiclesText.split(/\r?\n/)) {
+  const trimmed = line.trim()
+  if (!trimmed || trimmed.startsWith("#")) continue
+
+  const [record, rawId, rawType, rawBase, name, ...extra] = trimmed.split(/\s+/)
+  const id = Number(rawId)
+  const base = Number(rawBase)
+  if (
+    record !== "V" ||
+    rawId === undefined ||
+    rawType === undefined ||
+    rawBase === undefined ||
+    !name ||
+    extra.length > 0 ||
+    !Number.isSafeInteger(id) ||
+    id < 1 ||
+    vehicleIds.has(id) ||
+    !Number.isInteger(base) ||
+    base < 1 ||
+    base > junctionCount ||
+    !vehicleTypeLabels.has(rawType) ||
+    fleet.has(name)
+  ) {
+    throw new Error(`Invalid or duplicate vehicle record in vehicles.txt: ${trimmed}`)
+  }
+  vehicleIds.add(id)
+  fleet.set(name, vehicleTypeLabels.get(rawType))
+}
+if (fleet.size === 0) throw new Error("No vehicles were found in data/vehicles.txt.")
 const incidents = new Map()
 let nextId = 1
 
