@@ -11,38 +11,38 @@
 # 10 Green Hospital
 #
 # AMBULANCES (15)
-V 1 Ambulance 1 Ambulance-A1
+V 1 Ambulance 4 Ambulance-A1
 V 2 Ambulance 4 Ambulance-A2
-V 3 Ambulance 2 Ambulance-A3
-V 4 Ambulance 3 Ambulance-A4
-V 5 Ambulance 5 Ambulance-A5
-V 6 Ambulance 6 Ambulance-A6
-V 7 Ambulance 7 Ambulance-A7
-V 8 Ambulance 5 Ambulance-A8
-V 9 Ambulance 6 Ambulance-A9
-V 10 Ambulance 7 Ambulance-A10
-V 11 Ambulance 8 Ambulance-A11
-V 12 Ambulance 9 Ambulance-A12
+V 3 Ambulance 4 Ambulance-A3
+V 4 Ambulance 4 Ambulance-A4
+V 5 Ambulance 4 Ambulance-A5
+V 6 Ambulance 4 Ambulance-A6
+V 7 Ambulance 4 Ambulance-A7
+V 8 Ambulance 4 Ambulance-A8
+V 9 Ambulance 10 Ambulance-A9
+V 10 Ambulance 10 Ambulance-A10
+V 11 Ambulance 10 Ambulance-A11
+V 12 Ambulance 10 Ambulance-A12
 V 13 Ambulance 10 Ambulance-A13
-V 14 Ambulance 1 Ambulance-A14
-V 15 Ambulance 4 Ambulance-A15
+V 14 Ambulance 10 Ambulance-A14
+V 15 Ambulance 10 Ambulance-A15
 
 # FIRE TRUCKS (15)
 V 16 FireTruck 1 FireTruck-F1
-V 17 FireTruck 2 FireTruck-F2
-V 18 FireTruck 3 FireTruck-F3
-V 19 FireTruck 4 FireTruck-F4
-V 20 FireTruck 5 FireTruck-F5
-V 21 FireTruck 6 FireTruck-F6
-V 22 FireTruck 7 FireTruck-F7
-V 23 FireTruck 8 FireTruck-F8
-V 24 FireTruck 9 FireTruck-F9
-V 25 FireTruck 10 FireTruck-F10
-V 26 FireTruck 1 FireTruck-F11
-V 27 FireTruck 2 FireTruck-F12
-V 28 FireTruck 3 FireTruck-F13
-V 29 FireTruck 4 FireTruck-F14
-V 30 FireTruck 5 FireTruck-F15
+V 17 FireTruck 1 FireTruck-F2
+V 18 FireTruck 1 FireTruck-F3
+V 19 FireTruck 1 FireTruck-F4
+V 20 FireTruck 1 FireTruck-F5
+V 21 FireTruck 1 FireTruck-F6
+V 22 FireTruck 1 FireTruck-F7
+V 23 FireTruck 1 FireTruck-F8
+V 24 FireTruck 1 FireTruck-F9
+V 25 FireTruck 8 FireTruck-F10
+V 26 FireTruck 8 FireTruck-F11
+V 27 FireTruck 8 FireTruck-F12
+V 28 FireTruck 8 FireTruck-F13
+V 29 FireTruck 8 FireTruck-F14
+V 30 FireTruck 8 FireTruck-F15
 
 # POLICE UNITS (20)
 V 31 Police 3 Police-P1
@@ -67,37 +67,37 @@ V 49 Police 9 Police-P19
 V 50 Police 10 Police-P20
 
 # RESCUE BOATS (10)
-V 51 RescueBoat 6 Boat-B1
+V 51 RescueBoat 1 Boat-B1
 V 52 RescueBoat 1 Boat-B2
-V 53 RescueBoat 2 Boat-B3
-V 54 RescueBoat 3 Boat-B4
-V 55 RescueBoat 4 Boat-B5
-V 56 RescueBoat 5 Boat-B6
-V 57 RescueBoat 7 Boat-B7
-V 58 RescueBoat 8 Boat-B8
-V 59 RescueBoat 9 Boat-B9
-V 60 RescueBoat 10 Boat-B10
+V 53 RescueBoat 1 Boat-B3
+V 54 RescueBoat 1 Boat-B4
+V 55 RescueBoat 1 Boat-B5
+V 56 RescueBoat 1 Boat-B6
+V 57 RescueBoat 1 Boat-B7
+V 58 RescueBoat 1 Boat-B8
+V 59 RescueBoat 1 Boat-B9
+V 60 RescueBoat 1 Boat-B10
 
 # HELICOPTERS (10)
 V 61 Helicopter 1 Helicopter-H1
-V 62 Helicopter 2 Helicopter-H2
-V 63 Helicopter 3 Helicopter-H3
-V 64 Helicopter 4 Helicopter-H4
-V 65 Helicopter 5 Helicopter-H5
-V 66 Helicopter 6 Helicopter-H6
-V 67 Helicopter 7 Helicopter-H7
-V 68 Helicopter 8 Helicopter-H8
-V 69 Helicopter 9 Helicopter-H9
-V 70 Helicopter 10 Helicopter-H10
+V 62 Helicopter 1 Helicopter-H2
+V 63 Helicopter 1 Helicopter-H3
+V 64 Helicopter 1 Helicopter-H4
+V 65 Helicopter 1 Helicopter-H5
+V 66 Helicopter 1 Helicopter-H6
+V 67 Helicopter 1 Helicopter-H7
+V 68 Helicopter 1 Helicopter-H8
+V 69 Helicopter 1 Helicopter-H9
+V 70 Helicopter 1 Helicopter-H10
 
 # HEAVY RESCUE UNITS (10)
 V 71 HeavyRescue 1 HeavyRescue-HR1
-V 72 HeavyRescue 2 HeavyRescue-HR2
-V 73 HeavyRescue 3 HeavyRescue-HR3
-V 74 HeavyRescue 4 HeavyRescue-HR4
-V 75 HeavyRescue 5 HeavyRescue-HR5
-V 76 HeavyRescue 6 HeavyRescue-HR6
-V 77 HeavyRescue 7 HeavyRescue-HR7
-V 78 HeavyRescue 8 HeavyRescue-HR8
-V 79 HeavyRescue 9 HeavyRescue-HR9
-V 80 HeavyRescue 10 HeavyRescue-HR10
+V 72 HeavyRescue 1 HeavyRescue-HR2
+V 73 HeavyRescue 1 HeavyRescue-HR3
+V 74 HeavyRescue 1 HeavyRescue-HR4
+V 75 HeavyRescue 1 HeavyRescue-HR5
+V 76 HeavyRescue 1 HeavyRescue-HR6
+V 77 HeavyRescue 1 HeavyRescue-HR7
+V 78 HeavyRescue 1 HeavyRescue-HR8
+V 79 HeavyRescue 1 HeavyRescue-HR9
+V 80 HeavyRescue 1 HeavyRescue-HR10
