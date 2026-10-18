@@ -1,25 +1,25 @@
+#include <stdio.h>
 #include <string.h>
 #include "auth.h"
-#include "store.h"
 
-int auth_register(Store* s, const char* username, const char* password, const char* role) {
-    if (s->userCount >= MAX_USERS) return 0;
-    for (int k = 0; k < s->userCount; ++k) {
-        if (strcmp(s->users[k].username, username) == 0) return 0;
-    }
-    User* u = &s->users[s->userCount++];
-    copy_str(u->username, username, STR_LEN);
-    copy_str(u->password, password, STR_LEN);
-    copy_str(u->role, role, 16);
-    return 1;
-}
+int auth_login(const char* path, const char* user, const char* pass, char* role, int roleSize) {
+    FILE* f = fopen(path, "r");
+    if (!f) return 0;
 
-const User* auth_login(const Store* s, const char* username, const char* password) {
-    for (int k = 0; k < s->userCount; ++k) {
-        const User* u = &s->users[k];
-        if (strcmp(u->username, username) == 0 && strcmp(u->password, password) == 0) {
-            return u;
+    char line[256];
+    while (fgets(line, sizeof(line), f)) {
+        if (line[0] == '#' || line[0] == '\n' || line[0] == '\r') continue;
+
+        char u[USER_LEN], p[USER_LEN], r[16];
+        if (sscanf(line, "%31s %31s %15s", u, p, r) != 3) continue;
+
+        if (strcmp(u, user) == 0 && strcmp(p, pass) == 0) {
+            strncpy(role, r, roleSize - 1);
+            role[roleSize - 1] = '\0';
+            fclose(f);
+            return 1;
         }
     }
-    return NULL;
+    fclose(f);
+    return 0;
 }

@@ -1,0 +1,3 @@
+citizen1 1234 user
+citizen2 5678 user
+dispatch1 admin dispatcher

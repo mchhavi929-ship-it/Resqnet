@@ -26,15 +26,15 @@ static void strip(char* s) {
     if (p != s) memmove(s, p, strlen(p) + 1);
 }
 
-void city_add_road(City* c, int from, int to, int time) {
+void city_add_road(City* c, int from, int to, int distance, int time) {
     if (c->roadCount + 2 > MAX_ROADS) return;
 
     Road* a = &c->roads[c->roadCount++];
-    a->from = from; a->to = to;
+    a->from = from; a->to = to; a->distance = distance;
     a->baseTime = time; a->congestion = 1.0; a->isClosed = 0;
 
     Road* b = &c->roads[c->roadCount++];
-    b->from = to; b->to = from;
+    b->from = to; b->to = from; b->distance = distance;
     b->baseTime = time; b->congestion = 1.0; b->isClosed = 0;
 }
 
@@ -59,8 +59,10 @@ int city_load(const char* path, City* c) {
                 j->x = x;
                 j->y = y;
                 j->isBlocked = 0;
-                copy_str(j->type, type, sizeof(j->type));
-                copy_str(j->name, line + off, STR_LEN);
+                strncpy(j->type, type, sizeof(j->type) - 1);
+                j->type[sizeof(j->type) - 1] = '\0';
+                strncpy(j->name, line + off, NAME_LEN - 1);
+                j->name[NAME_LEN - 1] = '\0';
                 strip(j->name);
                 c->hasJunction[id] = 1;
             }
@@ -68,7 +70,7 @@ int city_load(const char* path, City* c) {
         else if (tag == 'R') {
             int from, to, dist, time;
             if (sscanf(line, " R %d %d %d %d", &from, &to, &dist, &time) == 4) {
-                city_add_road(c, from, to, time);
+                city_add_road(c, from, to, dist, time);
             }
         }
     }

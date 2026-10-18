@@ -3,20 +3,17 @@
 
 #include "common.h"
 
-#define MAX_JUNCTIONS   50
-#define MAX_ROADS       200
-#define INF_TIME        1000000000
-
 typedef struct {
     int  id;
     int  x, y;
     int  isBlocked;
     char type[16];
-    char name[STR_LEN];
+    char name[NAME_LEN];
 } Junction;
 
 typedef struct {
     int    from, to;
+    int    distance;
     int    baseTime;
     double congestion;
     int    isClosed;
@@ -29,13 +26,13 @@ typedef struct {
     int      roadCount;
 } City;
 
-void        city_init(City* c);
-int         city_load(const char* path, City* c);
-void        city_add_road(City* c, int from, int to, int time);
-int         city_find_by_name(const City* c, const char* name);
+void city_init(City* c);
+int  city_load(const char* path, City* c);
+void city_add_road(City* c, int from, int to, int distance, int time);
+int  city_find_by_name(const City* c, const char* name);
 const char* city_name(const City* c, int id);
-void        city_close_road(City* c, int a, int b);
-void        city_set_congestion(City* c, int a, int b, double factor);
+void city_close_road(City* c, int a, int b);
+void city_set_congestion(City* c, int a, int b, double factor);
 
 int city_shortest_path(const City* c, int start, int goal,
                        int path[], int maxPath, int* seconds);
