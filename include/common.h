@@ -1,24 +1,20 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define MAX_JUNCTIONS   50
-#define MAX_ROADS       200
-#define MAX_VEHICLES    100
-#define MAX_DISASTERS   50
-#define NAME_LEN        64
-#define INF_TIME        1000000000
-#define HELI_SPEED_MPS  16.7
+#include <string.h>
+#include <stddef.h>
 
-enum DisasterType {
-    FIRE, FLOOD, EARTHQUAKE, ROAD_ACCIDENT, BUILDING_COLLAPSE, STORM, HAZARDOUS
-};
+#define DATA_FILE        "data/resqnet.dat"
+#define MAX_USERS        100
+#define MAX_INCIDENTS    500
+#define STR_LEN          128
+#define INCIDENT_TYPES   24
+#define DISPATCHER_CODE  "RESQ-DISPATCH-2026"
 
-enum VehicleType {
-    AMBULANCE, FIRE_TRUCK, POLICE, RECOVERY, HEAVY_RESCUE, HELICOPTER, RESCUE_BOAT, RELIEF
-};
-
-enum VehicleState {
-    AVAILABLE, EN_ROUTE, ON_SCENE, TO_HOSPITAL, RETURNING
-};
+/* Safe string copy that always terminates */
+static inline void copy_str(char* dst, const char* src, size_t n) {
+    strncpy(dst, src, n - 1);
+    dst[n - 1] = '\0';
+}
 
 #endif

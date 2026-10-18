@@ -1,214 +1,233 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include "config.h"
-#include "city.h"
-#include "fleet.h"
-#include "disaster.h"
+#include "common.h"
+#include "user.h"
+#include "incident.h"
+#include "store.h"
+#include "auth.h"
 
-/* Vehicle types needed per disaster type. Row order matches enum DisasterType. */
-static const int needs[7][4] = {
-    { FIRE_TRUCK, AMBULANCE, -1, -1 },              /* Fire */
-    { RESCUE_BOAT, HELICOPTER, AMBULANCE, -1 },     /* Flood */
-    { AMBULANCE, HEAVY_RESCUE, HELICOPTER, -1 },    /* Earthquake */
-    { AMBULANCE, POLICE, -1, -1 },                  /* Road accident */
-    { AMBULANCE, HEAVY_RESCUE, -1, -1 },            /* Building collapse */
-    { HELICOPTER, AMBULANCE, -1, -1 },              /* Storm */
-    { FIRE_TRUCK, POLICE, -1, -1 }                  /* Hazardous */
-};
+/* ---------- input helpers ---------- */
 
-static int heli_seconds(const City* c, int from, int to, int preparationSeconds) {
-    double dx = c->junctions[from].x - c->junctions[to].x;
-    double dy = c->junctions[from].y - c->junctions[to].y;
-    double metres = sqrt(dx * dx + dy * dy) * 10.0;
-    int seconds = (int)(metres / HELI_SPEED_MPS);
-    return seconds < preparationSeconds
-        ? preparationSeconds
-        : seconds;
-}
-
-static int find_best(const Fleet* f, const City* c, int t, int target,
-                     int preparationSeconds) {
-    int best = -1;
-    int bestTime = INF_TIME;
-
-    for (int i = 0; i < f->count; ++i) {
-        const Vehicle* v = &f->vehicles[i];
-        if (v->state != AVAILABLE || v->type != t) continue;
-
-        int secs = 0;
-        if (v->type == HELICOPTER) {
-            secs = heli_seconds(c, v->location, target, preparationSeconds);
-        } else {
-            int path[MAX_JUNCTIONS];
-            if (city_shortest_path(c, v->location, target, path, MAX_JUNCTIONS, &secs) == 0) continue;
-            secs += preparationSeconds;
-        }
-        if (secs < bestTime) {
-            bestTime = secs;
-            best = i;
-        }
-    }
-    return best;
-}
-
-static void print_line(char ch) {
-    for (int i = 0; i < 60; ++i) putchar(ch);
-    putchar('\n');
-}
-
-static void clear_line_input(void) {
-    int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF) {}
+static void ask_line(const char* prompt, char* buf, int size) {
+    printf("%s", prompt);
+    if (!fgets(buf, size, stdin)) { buf[0] = '\0'; return; }
+    buf[strcspn(buf, "\r\n")] = '\0';
+    for (char* p = buf; *p; ++p) if (*p == '|') *p = '/';
 }
 
 static int ask_int(const char* prompt, int lo, int hi) {
-    int v;
+    char buf[64];
     while (1) {
-        printf("%s", prompt);
-        if (scanf("%d", &v) == 1 && v >= lo && v <= hi) {
-            clear_line_input();
-            return v;
-        }
-        clear_line_input();
+        ask_line(prompt, buf, sizeof(buf));
+        char* end;
+        long v = strtol(buf, &end, 10);
+        if (end != buf && *end == '\0' && v >= lo && v <= hi) return (int)v;
         printf("Please enter a number from %d to %d.\n", lo, hi);
     }
 }
 
-static void ask_line(char* buf, int size) {
-    if (fgets(buf, size, stdin)) {
-        buf[strcspn(buf, "\r\n")] = '\0';
-    } else {
-        buf[0] = '\0';
-    }
+static void line(char ch) {
+    for (int i = 0; i < 60; ++i) putchar(ch);
+    putchar('\n');
 }
 
-static void ask_disaster(City* c, int id, Disaster* d) {
-    d->id = id;
-    d->reportedAt = 0;
+/* ---------- display ---------- */
 
-    printf("\nPlaces on the map:\n");
-    for (int i = 1; i <= MAX_JUNCTIONS; ++i) {
-        if (c->hasJunction[i]) printf("  - %s\n", c->junctions[i].name);
+static void show_incident(const Incident* i) {
+    printf("  ID: %d | %s | Severity %d/10 | People: %d\n",
+           i->id, incident_type_name(i->type), i->severity, i->people);
+    printf("  Location: %s\n", i->location);
+    printf("  Status  : %s", i->status);
+    if (i->team[0]) printf("  | Team: %s", i->team);
+    printf("\n");
+    if (i->details[0]) printf("  Details : %s\n", i->details);
+}
+
+static void show_precaution(int type) {
+    printf("  PRECAUTION: %s\n", incident_precaution(type));
+}
+
+/* ---------- user side ---------- */
+
+static void report_emergency(Store* s, const char* username) {
+    line('-');
+    printf("Select emergency type:\n");
+    for (int t = 0; t < INCIDENT_TYPES; ++t) {
+        printf("  %2d. %s\n", t + 1, incident_type_name(t));
     }
+    int type = ask_int("Enter number (1-24): ", 1, INCIDENT_TYPES) - 1;
 
+    char location[STR_LEN], details[STR_LEN];
+    ask_line("Exact location (road, landmark): ", location, sizeof(location));
+    int severity = ask_int("How serious? (1 = minor, 10 = critical): ", 1, 10);
+    int people   = ask_int("How many people are affected? ", 0, 100000);
+    ask_line("Describe what is happening: ", details, sizeof(details));
+
+    int id = incident_add(s, type, severity, people, location, username, details);
+    if (id < 0) {
+        printf("Storage full, cannot save report.\n");
+        return;
+    }
+    store_save(s, DATA_FILE);
+
+    line('=');
+    printf(" Report saved. Your incident ID is %d\n", id);
+    printf(" Help is being sent. Team will be assigned shortly.\n");
+    line('-');
+    show_precaution(type);
+    line('=');
+}
+
+static void my_reports(const Store* s, const char* username) {
+    int found = 0;
+    for (int k = 0; k < s->incidentCount; ++k) {
+        const Incident* i = &s->incidents[k];
+        if (strcmp(i->reporter, username) != 0) continue;
+        found = 1;
+        line('-');
+        show_incident(i);
+        show_precaution(i->type);
+    }
+    if (!found) printf("You have not reported any emergency yet.\n");
+}
+
+static void user_menu(Store* s, const char* username) {
     while (1) {
-        char name[NAME_LEN];
-        printf("Where is the emergency? (place name): ");
-        ask_line(name, sizeof(name));
-        int loc = city_find_by_name(c, name);
-        if (loc != -1) { d->location = loc; break; }
-        printf("Place not found. Pick one from the list above.\n");
+        line('=');
+        printf(" USER MENU (%s)\n", username);
+        line('=');
+        printf("1. Report an emergency\n2. My reports and precautions\n3. Logout\n");
+        int c = ask_int("Choose: ", 1, 3);
+        if (c == 1) report_emergency(s, username);
+        else if (c == 2) my_reports(s, username);
+        else return;
+    }
+}
+
+/* ---------- dispatcher side ---------- */
+
+static void list_all(const Store* s) {
+    if (s->incidentCount == 0) { printf("No incidents.\n"); return; }
+    int order[MAX_INCIDENTS];
+    int n = incident_sorted(s, order);
+    for (int k = 0; k < n; ++k) {
+        line('-');
+        show_incident(&s->incidents[order[k]]);
+    }
+    line('-');
+}
+
+static void assign_team(Store* s) {
+    int id = ask_int("Incident ID: ", 1, 100000);
+    Incident* i = incident_find(s, id);
+    if (!i) { printf("No incident with that ID.\n"); return; }
+
+    char team[STR_LEN];
+    ask_line("Team name (e.g. Ambulance-A1): ", team, sizeof(team));
+    copy_str(i->team, team, STR_LEN);
+    copy_str(i->status, "DISPATCHED", 16);
+    store_save(s, DATA_FILE);
+    printf("Team '%s' dispatched to incident %d.\n", i->team, id);
+}
+
+static void resolve(Store* s) {
+    int id = ask_int("Incident ID: ", 1, 100000);
+    Incident* i = incident_find(s, id);
+    if (!i) { printf("No incident with that ID.\n"); return; }
+    copy_str(i->status, "RESOLVED", 16);
+    store_save(s, DATA_FILE);
+    printf("Incident %d marked RESOLVED.\n", id);
+}
+
+static void relay_precaution(const Store* s) {
+    int id = ask_int("Incident ID: ", 1, 100000);
+    const Incident* i = NULL;
+    for (int k = 0; k < s->incidentCount; ++k) {
+        if (s->incidents[k].id == id) i = &s->incidents[k];
+    }
+    if (!i) { printf("No incident with that ID.\n"); return; }
+    line('-');
+    printf(" Tell the caller: %s\n", incident_type_name(i->type));
+    show_precaution(i->type);
+    line('-');
+}
+
+static void dispatcher_menu(Store* s, const char* username) {
+    while (1) {
+        line('=');
+        printf(" DISPATCHER MENU (%s)\n", username);
+        line('=');
+        printf("1. View all incidents (most severe first)\n");
+        printf("2. Assign team to an incident\n");
+        printf("3. Mark incident resolved\n");
+        printf("4. Show precaution for an incident\n");
+        printf("5. Logout\n");
+        int c = ask_int("Choose: ", 1, 5);
+        if (c == 1) list_all(s);
+        else if (c == 2) assign_team(s);
+        else if (c == 3) resolve(s);
+        else if (c == 4) relay_precaution(s);
+        else return;
+    }
+}
+
+/* ---------- login / register ---------- */
+
+static void register_user(Store* s) {
+    char u[STR_LEN], p[STR_LEN];
+    ask_line("New username: ", u, sizeof(u));
+    ask_line("New password: ", p, sizeof(p));
+    int r = ask_int("Role (1 = user, 2 = dispatcher): ", 1, 2);
+
+    const char* role = "user";
+    if (r == 2) {
+        char code[64];
+        ask_line("Dispatcher access code: ", code, sizeof(code));
+        if (strcmp(code, DISPATCHER_CODE) != 0) {
+            printf("Wrong access code. Registration denied.\n");
+            return;
+        }
+        role = "dispatcher";
     }
 
-    printf("\nWhat happened?\n");
-    for (int i = 0; i < 7; ++i) printf("  %d. %s\n", i + 1, disaster_type_name(i));
-    d->type = ask_int("Enter number (1-7): ", 1, 7) - 1;
-    d->severity = ask_int("Severity (1 = minor, 10 = critical): ", 1, 10);
-    d->peopleAffected = ask_int("How many people are affected? ", 0, 100000);
+    if (auth_register(s, u, p, role)) {
+        store_save(s, DATA_FILE);
+        printf("Account created as %s. Please login.\n", role);
+    } else {
+        printf("Username already exists or storage full.\n");
+    }
 }
+
+static void login(Store* s) {
+    char u[STR_LEN], p[STR_LEN];
+    ask_line("Username: ", u, sizeof(u));
+    ask_line("Password: ", p, sizeof(p));
+
+    const User* usr = auth_login(s, u, p);
+    if (!usr) { printf("Wrong username or password.\n"); return; }
+
+    if (strcmp(usr->role, "dispatcher") == 0) dispatcher_menu(s, usr->username);
+    else                                      user_menu(s, usr->username);
+}
+
+/* ---------- main ---------- */
 
 int main(void) {
-    City city;
-    Fleet fleet;
-    DisasterList queue;
-    ResqnetConfig config;
-    const char* configPath = "server/config.json";
+    Store store;
+    store_init(&store);
+    store_load(&store, DATA_FILE);
 
-    city_init(&city);
-    fleet_init(&fleet);
-    queue.count = 0;
-
-    if (!city_load("data/city.txt", &city)) {
-        printf("Could not open data/city.txt\n");
-        return 1;
-    }
-    if (!fleet_load("data/vehicles.txt", &fleet)) {
-        printf("Could not open data/vehicles.txt\n");
-        return 1;
-    }
-    if (!resqnet_config_load(configPath, &config)) {
-        printf("Could not load valid settings from %s\n", configPath);
-        return 1;
-    }
-
-    print_line('=');
-    printf(" RESQNET Phase 1 - Emergency Input\n");
-    print_line('=');
-
-    int nextId = 1;
     while (1) {
-        printf("Add an emergency? (y/n): ");
-        char ans[8];
-        ask_line(ans, sizeof(ans));
-        if (ans[0] != 'y' && ans[0] != 'Y') break;
-
-        Disaster d;
-        ask_disaster(&city, nextId++, &d);
-        if (queue.count < MAX_DISASTERS) queue.items[queue.count++] = d;
-        printf("\n");
+        line('=');
+        printf(" RESQNET - Emergency Reporting System\n");
+        line('=');
+        printf("1. Login\n2. Register\n3. Exit\n");
+        int c = ask_int("Choose: ", 1, 3);
+        if (c == 1) login(&store);
+        else if (c == 2) register_user(&store);
+        else break;
     }
-
-    if (queue.count == 0) {
-        printf("No emergencies entered. Exiting.\n");
-        return 0;
-    }
-
-    int total = queue.count;
-    print_line('=');
-    printf(" DISPATCH REPORT  (%d incident(s), by priority)\n", total);
-    print_line('=');
-
-    int order = 1;
-    Disaster d;
-    const DisasterScoreWeights scoreWeights = {
-        config.severityWeight,
-        config.peopleAffectedWeight,
-    };
-    while (disaster_pop_best(&queue, &d, &scoreWeights)) {
-        printf("\n INCIDENT %d of %d  |  %s\n", order, total, disaster_type_name(d.type));
-        printf(" Location : %s (junction %d)\n", city_name(&city, d.location), d.location);
-        printf(" Severity : %d/10  |  People affected: %d\n", d.severity, d.peopleAffected);
-        printf(" Priority : %s\n", order == 1 ? "Handled first" : "Queued");
-        print_line('-');
-
-        const int* needed = needs[d.type];
-        for (int k = 0; k < 4 && needed[k] != -1; ++k) {
-            int idx = find_best(&fleet, &city, needed[k], d.location,
-                                config.responsePreparationSeconds);
-            if (idx < 0) {
-                printf("  [--] No free vehicle of the required type\n");
-                continue;
-            }
-
-            Vehicle* v = &fleet.vehicles[idx];
-            int path[MAX_JUNCTIONS];
-            int secs = 0;
-
-            printf("  [GO] %s  (from %s)\n", v->name, city_name(&city, v->location));
-            if (v->type == HELICOPTER) {
-                secs = heli_seconds(&city, v->location, d.location,
-                                    config.responsePreparationSeconds);
-                printf("       Route   : direct flight (ignores roads)\n");
-            } else {
-                int n = city_shortest_path(&city, v->location, d.location, path, MAX_JUNCTIONS, &secs);
-                secs += config.responsePreparationSeconds;
-                printf("       Route   : ");
-                for (int i = 0; i < n; ++i) {
-                    printf("%s", city_name(&city, path[i]));
-                    if (i + 1 < n) printf(" -> ");
-                }
-                printf("\n");
-            }
-            printf("       ETA     : %d s  (includes %d s response prep)\n",
-                   secs, config.responsePreparationSeconds);
-
-            v->state = ON_SCENE;
-            v->location = d.location;
-        }
-        print_line('-');
-        order++;
-    }
-    print_line('=');
+    printf("Goodbye.\n");
     return 0;
 }
