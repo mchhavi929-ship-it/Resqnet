@@ -3,6 +3,6 @@
 
 #include "common.h"
 
-int auth_login(const char* path, const char* user, const char* pass, char* role, int roleSize);
+int auth_run(char* userOut, int* isDispatcherOut);
 
 #endif
