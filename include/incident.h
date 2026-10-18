@@ -3,18 +3,32 @@
 
 #include "common.h"
 
-#define INCIDENT_TYPES 25
+typedef struct {
+    int  id;
+    int  type;
+    int  location;
+    int  severity;
+    int  people;
+    int  status;
+    int  vehicleCount;
+    int  vehicles[4];
+    char reporter[USER_LEN];
+    char description[DESC_LEN];
+} Incident;
 
-enum IncidentType {
-    ROAD_ACCIDENT, FIRE_EMERGENCY, MEDICAL_EMERGENCY, FLOODING, ELECTRICAL_HAZARD,
-    BUILDING_COLLAPSE, CHEMICAL_GAS_LEAK, ROAD_BLOCKAGE, MISSING_PERSON, LANDSLIDE,
-    EARTHQUAKE, HEART_ATTACK, STROKE, DROWNING, VEHICLE_BREAKDOWN,
-    INDUSTRIAL_ACCIDENT, GAS_EXPLOSION, SEVERE_WEATHER, FOREST_FIRE, ANIMAL_ATTACK,
-    CRIME_ASSAULT, CHILD_ELDERLY_DANGER, TRAIN_ACCIDENT, WATER_PIPELINE_BURST, STRUCTURAL_DAMAGE
-};
+typedef struct {
+    Incident items[MAX_INCIDENTS];
+    int      count;
+} IncidentStore;
 
-const char* incident_name(int type);
-const int*  incident_needs(int type);
-const char* incident_precaution(int type);
+#define INCIDENT_FILE_HEADER "# I id type location severity people status vcount v0 v1 v2 v3 reporter|description"
+
+void store_init(IncidentStore* s);
+int  store_load(const char* path, IncidentStore* s);
+int  store_save(const char* path, const IncidentStore* s);
+int  store_add(IncidentStore* s, Incident inc);
+double priority_score(const Incident* inc);
+int  store_best_pending(const IncidentStore* s, const int skip[]);
+const char* status_name(int status);
 
 #endif

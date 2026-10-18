@@ -1,83 +1,92 @@
+#include <stdio.h>
+#include <string.h>
 #include "incident.h"
 
-static const char* names[INCIDENT_TYPES] = {
-    "Road Accident", "Fire Emergency", "Medical Emergency", "Flooding",
-    "Electrical Hazard", "Building Collapse", "Chemical or Gas Leak", "Road Blockage",
-    "Missing or Stranded Person", "Landslide", "Earthquake", "Heart Attack",
-    "Stroke", "Drowning", "Vehicle Breakdown", "Industrial Accident",
-    "Gas Explosion", "Severe Weather", "Forest Fire", "Animal Attack",
-    "Crime or Assault", "Child or Elderly Person in Danger", "Train Accident",
-    "Water Pipeline Burst", "Structural Damage"
-};
-
-/* Vehicles sent per incident type, -1 terminated */
-static const int needs[INCIDENT_TYPES][5] = {
-    { POLICE, AMBULANCE, RECOVERY, -1, -1 },
-    { FIRE_TRUCK, AMBULANCE, -1, -1, -1 },
-    { AMBULANCE, -1, -1, -1, -1 },
-    { RESCUE_BOAT, HELICOPTER, AMBULANCE, -1, -1 },
-    { FIRE_TRUCK, POLICE, -1, -1, -1 },
-    { HEAVY_RESCUE, AMBULANCE, -1, -1, -1 },
-    { FIRE_TRUCK, AMBULANCE, POLICE, -1, -1 },
-    { RECOVERY, POLICE, -1, -1, -1 },
-    { POLICE, HELICOPTER, -1, -1, -1 },
-    { HEAVY_RESCUE, HELICOPTER, AMBULANCE, -1, -1 },
-    { HEAVY_RESCUE, AMBULANCE, HELICOPTER, -1, -1 },
-    { AMBULANCE, -1, -1, -1, -1 },
-    { AMBULANCE, -1, -1, -1, -1 },
-    { RESCUE_BOAT, AMBULANCE, -1, -1, -1 },
-    { RECOVERY, -1, -1, -1, -1 },
-    { FIRE_TRUCK, HEAVY_RESCUE, AMBULANCE, -1, -1 },
-    { FIRE_TRUCK, AMBULANCE, POLICE, -1, -1 },
-    { HELICOPTER, RELIEF, AMBULANCE, -1, -1 },
-    { FIRE_TRUCK, HELICOPTER, -1, -1, -1 },
-    { AMBULANCE, POLICE, -1, -1, -1 },
-    { POLICE, AMBULANCE, -1, -1, -1 },
-    { POLICE, AMBULANCE, -1, -1, -1 },
-    { HEAVY_RESCUE, AMBULANCE, FIRE_TRUCK, -1, -1 },
-    { RECOVERY, RELIEF, -1, -1, -1 },
-    { HEAVY_RESCUE, RECOVERY, -1, -1, -1 }
-};
-
-static const char* precautions[INCIDENT_TYPES] = {
-    "Do not move the injured unless they are in danger from traffic or fire. "
-    "Switch off the engine, turn on hazard lights, and press a clean cloth on any bleeding.",
-    "Leave the building by the nearest safe exit and do not use lifts. Keep low to avoid smoke.",
-    "Keep the person calm and lying down with head slightly raised. Do not give food or water.",
-    "Move to higher ground or upper floors. Do not walk or drive through moving water.",
-    "Do not touch the person or the wire. Keep at least 10 metres away from fallen or sparking wires.",
-    "Move away from the building and do not enter it. Cover nose and mouth if there is dust.",
-    "Leave the area immediately and move upwind. Cover nose and mouth with a wet cloth.",
-    "Keep away from the blocked road and use an alternate route. Do not try to clear it yourself.",
-    "Note the last seen place, time and clothing. Do not search unsafe areas alone.",
-    "Move away from the slope and from the path of mud or rock. Do not return until declared safe.",
-    "Drop, cover and hold under a sturdy table. After shaking stops, leave by the stairs, not the lift.",
-    "Keep the person sitting or lying down and calm. Start CPR if they stop breathing normally.",
-    "Note the time symptoms started. Keep the person still and do not give food or drink.",
-    "Do not enter the water unless trained. Throw a rope or floating object to the person.",
-    "Move the vehicle to the side if safe. Turn on hazard lights and stay away from traffic.",
-    "Move away from the plant and upwind. Follow the instructions of the plant staff.",
-    "Leave the building at once. Do not use switches, phones or lighters inside.",
-    "Stay indoors away from windows. Do not go near rivers, trees or hoardings.",
-    "Move away from the fire, keep windows closed and do not drive through smoke.",
-    "Move slowly away from the animal and do not run. Wash the wound and seek medical care.",
-    "Move to a safe, crowded place. Do not confront the attacker. Note their description.",
-    "Keep the person in a safe place away from the danger. Do not leave them alone.",
-    "Keep away from the tracks and carriages. Do not use open flames. Wait for the rescue team.",
-    "Keep away from the water flow and move to higher ground. Avoid the flooded road.",
-    "Leave the damaged structure and do not re-enter. Keep away from cracked walls."
-};
-
-const char* incident_name(int type) {
-    if (type < 0 || type >= INCIDENT_TYPES) return "Unknown";
-    return names[type];
+void store_init(IncidentStore* s) {
+    s->count = 0;
 }
 
-const int* incident_needs(int type) {
-    return needs[type];
+int store_load(const char* path, IncidentStore* s) {
+    store_init(s);
+    FILE* f = fopen(path, "r");
+    if (!f) return 1;
+
+    char line[512];
+    while (fgets(line, sizeof line, f)) {
+        if (line[0] != 'I') continue;
+
+        Incident inc;
+        memset(&inc, 0, sizeof inc);
+        int n = sscanf(line, "I %d %d %d %d %d %d %d %d %d %d %d %31s",
+                       &inc.id, &inc.type, &inc.location, &inc.severity, &inc.people,
+                       &inc.status, &inc.vehicleCount,
+                       &inc.vehicles[0], &inc.vehicles[1], &inc.vehicles[2], &inc.vehicles[3],
+                       inc.reporter);
+        if (n != 12) continue;
+
+        char* bar = strchr(line, '|');
+        if (bar) {
+            strncpy(inc.description, bar + 1, DESC_LEN - 1);
+            inc.description[strcspn(inc.description, "\r\n")] = '\0';
+        }
+        if (s->count < MAX_INCIDENTS) s->items[s->count++] = inc;
+    }
+    fclose(f);
+    return 1;
 }
 
-const char* incident_precaution(int type) {
-    if (type < 0 || type >= INCIDENT_TYPES) return "";
-    return precautions[type];
+int store_save(const char* path, const IncidentStore* s) {
+    FILE* f = fopen(path, "w");
+    if (!f) return 0;
+
+    fprintf(f, "%s\n", INCIDENT_FILE_HEADER);
+    for (int i = 0; i < s->count; ++i) {
+        const Incident* inc = &s->items[i];
+        fprintf(f, "I %d %d %d %d %d %d %d %d %d %d %d %s|%s\n",
+                inc->id, inc->type, inc->location, inc->severity, inc->people,
+                inc->status, inc->vehicleCount,
+                inc->vehicles[0], inc->vehicles[1], inc->vehicles[2], inc->vehicles[3],
+                inc->reporter, inc->description);
+    }
+    fclose(f);
+    return 1;
+}
+
+int store_add(IncidentStore* s, Incident inc) {
+    if (s->count >= MAX_INCIDENTS) return -1;
+
+    int maxId = 0;
+    for (int i = 0; i < s->count; ++i) {
+        if (s->items[i].id > maxId) maxId = s->items[i].id;
+    }
+    inc.id = maxId + 1;
+    inc.status = REPORTED;
+    inc.vehicleCount = 0;
+    for (int k = 0; k < 4; ++k) inc.vehicles[k] = -1;
+
+    s->items[s->count++] = inc;
+    return inc.id;
+}
+
+double priority_score(const Incident* inc) {
+    return inc->severity * 10.0 + inc->people * 0.5;
+}
+
+int store_best_pending(const IncidentStore* s, const int skip[]) {
+    int best = -1;
+    double bestScore = -1.0;
+    for (int i = 0; i < s->count; ++i) {
+        if (s->items[i].status != REPORTED || skip[i]) continue;
+        double sc = priority_score(&s->items[i]);
+        if (sc > bestScore) {
+            bestScore = sc;
+            best = i;
+        }
+    }
+    return best;
+}
+
+const char* status_name(int status) {
+    static const char* names[] = { "REPORTED", "DISPATCHED", "RESOLVED" };
+    return names[status];
 }
