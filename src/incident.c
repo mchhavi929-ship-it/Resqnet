@@ -17,7 +17,7 @@ int store_load(const char* path, IncidentStore* s) {
 
         Incident inc;
         memset(&inc, 0, sizeof inc);
-        int n = sscanf(line, "I %d %d %d %d %d %d %d %d %d %d %d %31s",
+        int n = sscanf(line, "I %d %d %d %d %d %d %d %d %d %d %d %31[^|]",
                        &inc.id, &inc.type, &inc.location, &inc.severity, &inc.people,
                        &inc.status, &inc.vehicleCount,
                        &inc.vehicles[0], &inc.vehicles[1], &inc.vehicles[2], &inc.vehicles[3],
