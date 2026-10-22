@@ -3,7 +3,7 @@
 
 #define MAX_JUNCTIONS   50
 #define MAX_ROADS       200
-#define MAX_VEHICLES    50
+#define MAX_VEHICLES    100
 #define MAX_INCIDENTS   1000
 #define NAME_LEN        64
 #define DESC_LEN        200
