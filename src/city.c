@@ -105,6 +105,18 @@ void city_set_congestion(City* c, int a, int b, double factor) {
     }
 }
 
+int city_set_road_closed(City* c, int a, int b, int closed) {
+    int found = 0;
+    for (int i = 0; i < c->roadCount; ++i) {
+        Road* r = &c->roads[i];
+        if ((r->from == a && r->to == b) || (r->from == b && r->to == a)) {
+            r->isClosed = closed;
+            found = 1;
+        }
+    }
+    return found;
+}
+
 int city_shortest_path(const City* c, int start, int goal,
                        int path[], int maxPath, int* seconds) {
     double dist[MAX_JUNCTIONS + 1];
