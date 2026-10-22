@@ -33,6 +33,7 @@ int  city_find_by_name(const City* c, const char* name);
 const char* city_name(const City* c, int id);
 void city_close_road(City* c, int a, int b);
 void city_set_congestion(City* c, int a, int b, double factor);
+int  city_set_road_closed(City* c, int a, int b, int closed);
 
 int city_shortest_path(const City* c, int start, int goal,
                        int path[], int maxPath, int* seconds);
