@@ -212,15 +212,36 @@ static void dispatcher_resolve(void) {
     printf("No incident with id %d.\n", id);
 }
 
-static void dispatcher_menu(const City* c, const Fleet* f) {
+static void dispatcher_road_status(City* c) {
+    printf("\nRoads on the map:\n");
+    int shown = 0;
+    for (int i = 0; i < c->roadCount; i += 2) {
+        Road* r = &c->roads[i];
+        printf("  %d. %s <-> %s  [%s]\n", ++shown,
+               city_name(c, r->from), city_name(c, r->to),
+               r->isClosed ? "BLOCKED" : "open");
+    }
+    int pick = ask_int("Enter road number to toggle (0 to cancel): ", 0, shown);
+    if (pick == 0) return;
+
+    Road* r = &c->roads[(pick - 1) * 2];
+    int nowClosed = !r->isClosed;
+    city_set_road_closed(c, r->from, r->to, nowClosed);
+    printf("Road %s <-> %s is now %s. New dispatches and user refreshes will use the new route.\n",
+           city_name(c, r->from), city_name(c, r->to),
+           nowClosed ? "BLOCKED" : "OPEN");
+}
+
+static void dispatcher_menu(City* c, const Fleet* f) {
     while (1) {
         char b[16];
-        printf("\n[DISPATCHER] 1. All incidents  2. Dispatch next  3. Dispatch all pending  4. Mark resolved  5. Logout\nChoice: ");
+        printf("\n[DISPATCHER] 1. All incidents  2. Dispatch next  3. Dispatch all pending  4. Mark resolved  5. Road status  6. Logout\nChoice: ");
         ask_line(b, sizeof b);
         if (b[0] == '1') dispatcher_list(c, f);
         else if (b[0] == '2') dispatch_next(c, f);
         else if (b[0] == '3') dispatch_all(c, f);
         else if (b[0] == '4') dispatcher_resolve();
+        else if (b[0] == '5') dispatcher_road_status(c);
         else break;
     }
 }
