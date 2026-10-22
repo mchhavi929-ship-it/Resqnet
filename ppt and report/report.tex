@@ -1,0 +1,528 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\ifLuaTeX
+  \usepackage{luacolor}
+  \usepackage[soul]{lua-ul}
+\else
+  \usepackage{soul}
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{quote}
+\includegraphics[width=0.72917in,height=0.72917in,alt={Graphic Era logo}]{./media/image1.jpg}
+\end{quote}
+
+\section{\texorpdfstring{PROJECT AND TEAM INFORMATION
+}{PROJECT AND TEAM INFORMATION }}\label{project-and-team-information}
+
+Project Title
+
+\begin{quote}
+RESQNET: Smart Urban Emergency \& Transportation Network Simulator
+\end{quote}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\emph{Team Name:} \emph{Team \#}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\emph{RESQNET}
+
+\emph{DSCPP-III-2026-T070}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\emph{\textbf{Team member 1 (Team Lead)}}
+
+\emph{(Last Name, name: student ID: email, picture):} &
+\begin{minipage}[t]{\linewidth}\raggedright
+\emph{Chhavi -- 2510012506}
+
+\emph{\ul{2510012506@geu.ac.in}}
+
+\begin{quote}
+\includegraphics[width=0.625in,height=0.78125in,alt={photo}]{./media/image2.jpg}
+\end{quote}
+\end{minipage} \\
+\emph{\textbf{Team member 2}}
+
+\emph{(Last Name, name: student ID: email, picture):} &
+\begin{minipage}[t]{\linewidth}\raggedright
+\emph{Tapashya -- 2510011649}
+
+\emph{\ul{2510011649@geu.ac.in}}
+
+\begin{quote}
+\includegraphics[width=0.625in,height=0.875in,alt={photo}]{./media/image3.jpg}
+\end{quote}
+\end{minipage} \\
+\emph{\textbf{Team member 3}}
+
+\emph{(Last Name, name: student ID: email, picture):} &
+\begin{minipage}[t]{\linewidth}\raggedright
+\emph{Chahal, Arpit -- 2510012000}
+
+\emph{\ul{2510012000@geu.ac.in}}
+
+\begin{quote}
+\includegraphics[width=0.625in,height=0.70833in,alt={photo}]{./media/image4.jpg}
+\end{quote}
+\end{minipage} \\
+\end{longtable}
+}
+
+\section{\texorpdfstring{PHASE-II PROJECT PROGRESS DESCRIPTION (35 pts)
+}{PHASE-II PROJECT PROGRESS DESCRIPTION (35 pts) }}\label{phase-ii-project-progress-description-35-pts}
+
+Project Abstract (2 pts)
+
+\begin{quote}
+RESQNET is a C++17 console-based simulator that models how a city
+responds to several emergencies at the same time. The city is
+represented as a weighted graph in which junctions, hospitals and key
+locations are nodes and roads are edges carrying distance and
+travel-time weights. The simulator prioritizes incoming incidents with a
+priority queue, selects suitable emergency vehicles from a shared
+resource pool, and routes them to the incident using Dijkstra's
+algorithm.
+
+The overall goal is one integrated model that shows the connected
+decisions of emergency response: incident prioritization, resource
+allocation, traffic-aware routing, dispatch, rerouting around road
+failures, hospital selection and critical-junction analysis. The project
+focuses on algorithmic decision-making using Data Structures and OOP
+concepts, not on live GPS or hardware.
+\end{quote}
+
+Updated Project Approach and Architecture (2 pts)
+
+\begin{quote}
+The system follows the layered architecture from our proposal: an input
+layer, a core system layer and a data layer, with a user interface (UI)
+layer for simulation controls and output display. The core flow is
+Disaster Event → Incident Analysis → Priority Engine → Resource
+Allocation → Routing Engine → Dispatch \& Response → Hospital Selection
+→ Network Analysis → Logging.
+
+Currently implemented: the weighted city graph, the Event Manager and
+incident handling, the Priority Engine (priority queue), the Resource
+Allocation engine, the Routing Engine (Dijkstra) and the Dispatch \&
+Response step.
+
+Data structures and algorithms: weighted graph, priority queue, vectors,
+queues and hash maps; Dijkstra for routing, with BFS/DFS and
+articulation points planned for network analysis. OOP is used for
+Vehicle, Disaster and Hospital classes with inheritance, polymorphism
+and encapsulation.
+
+Libraries and tools: C++17 with the Standard Template Library only (no
+external libraries); VS Code / Code::Blocks as IDEs; Git and GitHub for
+version control. The application runs as a single process, so modules
+communicate through function calls and shared in-memory data and no
+network protocol is used.
+\end{quote}
+
+Tasks Completed (7 pts)
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6313}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3687}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Task Completed}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Team Member}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Problem statement finalized; disaster and vehicle types identified;
+system architecture and class structure designed & All members (Chhavi
+as Team Lead) \\
+City road network implemented in C++ as a weighted graph (junctions,
+roads, distance and travel-time weights) & Chhavi \\
+Dijkstra's shortest-path routing implemented & Chhavi \\
+Disaster/incident handling and emergency priority queue implemented &
+Chahal, Arpit \\
+Resource allocation (selecting a suitable available vehicle for an
+incident) and OOP classes & Tapashya \\
+Dispatch of selected resources to the incident & Tapashya \\
+User interface (UI) for running and viewing the simulation & Chhavi \\
+\end{longtable}
+}
+
+Challenges/Roadblocks (7 pts)
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.0479}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.9521}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+•
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Keeping routes correct when edge weights change. Travel cost must react
+to traffic and road failures, so the plan is to keep all weights inside
+one graph object and recompute Dijkstra whenever a weight changes.
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+•
+\end{quote}
+\end{minipage} & Integrating modules written by different members
+(priority queue, allocation, routing, dispatch). We agreed on common
+class interfaces and merge work in small steps using Git branches. \\
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+•
+\end{quote}
+\end{minipage} & Several incidents competing for the same vehicles.
+Allocation uses incident priority together with vehicle availability and
+distance, and will be tested with many simultaneous incidents. \\
+\end{longtable}
+}
+
+Tasks Pending (7 pts)
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.6313}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3687}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Task Pending}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Team Member (to complete the task)}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Hospital selection by capability, capacity and travel time & Tapashya \\
+Dynamic rerouting on road or junction failure & Chhavi \\
+Critical junction detection using articulation points & Chhavi \\
+Traffic congestion model and time-based simulation clock & Chahal,
+Arpit \\
+File logging (fstream) of events and results & Chahal, Arpit \\
+Scenario testing, comparison of results, documentation and final demo &
+All members \\
+\end{longtable}
+}
+
+Project Outcome/Deliverables (2 pts)
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.0479}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.9521}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+•
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+A complete C++17 console simulator with modules for emergency response
+management, smart traffic management and dynamic navigation / network
+analysis.
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+•
+\end{quote}
+\end{minipage} & The city modeled as a weighted graph of roads,
+junctions, hospitals and emergency points, with a multi-vehicle resource
+pool. \\
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+•
+\end{quote}
+\end{minipage} & Source code, project report/documentation with system
+design and flow diagrams, test results and the final project
+presentation. \\
+\end{longtable}
+}
+
+Progress Overview (2 pts)
+
+\begin{quote}
+Of the 13 milestones in our proposal, milestones 1 (simulation rules), 2
+(base city map) and 4 (emergency resources and allocation) are complete,
+and milestone 3 (incident lifecycle) is in progress: creation,
+prioritization and dispatch work, while arrival and closing remain. The
+core pipeline Disaster → Priority Queue → Resource Allocation → Dijkstra
+Routing → Dispatch is working.
+
+The Phase II targets from our roadmap (graph, priority queue, Dijkstra
+routing, resource allocation) are met, and dispatch and the UI were also
+completed. Milestones 5 to 13 (traffic and congestion, intersection
+priority, rerouting, hospital selection, network analysis, full
+simulation, scenario comparison and final testing) are pending and
+planned for the next phase.
+\end{quote}
+
+Codebase Information (2 pts)
+
+\begin{quote}
+Repository link: https://github.com/mchhavi929-ship-it/Resqnet Branch:
+main
+\end{quote}
+
+Testing and Validation Status (2 pts)
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2806}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1503}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5691}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Test Type}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\textbf{Status}
+
+\textbf{(Pass/Fail)}
+\end{quote}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\textbf{Notes}
+\end{quote}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Graph construction & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pass
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+City graph built with junctions and roads; node count, edges and
+distance/travel-time weights checked against the input data.
+\end{quote}
+\end{minipage} \\
+Dijkstra shortest route & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pass
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Routes between junction pairs compared with manually calculated shortest
+paths on a small sample graph.
+\end{quote}
+\end{minipage} \\
+Priority queue ordering & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pass
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Incidents of different severity inserted in random order; the
+highest-priority incident is always removed first.
+\end{quote}
+\end{minipage} \\
+Multiple incident handling & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pass
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Several simultaneous incidents of different disaster types created and
+processed in priority order.
+\end{quote}
+\end{minipage} \\
+Resource allocation & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pass
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Selected vehicle matches the disaster type, is available and is the best
+choice by distance.
+\end{quote}
+\end{minipage} \\
+Dispatch & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pass
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Dispatched vehicle is marked busy and is not assigned to another
+incident until it is free.
+\end{quote}
+\end{minipage} \\
+Integrated flow (end to end) &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pass
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Disaster → priority queue → allocation → routing → dispatch run with
+sample city data.
+\end{quote}
+\end{minipage} \\
+Dynamic rerouting, hospital selection &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pending
+\end{quote}
+\end{minipage} & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Not tested yet; these features are still to be implemented.
+\end{quote}
+\end{minipage} \\
+\end{longtable}
+}
+
+Deliverables Progress (2 pts)
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5210}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4790}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Deliverable}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\begin{quote}
+\textbf{Status}
+\end{quote}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+C++ simulator: graph, priority queue, Dijkstra routing, resource
+allocation, dispatch, UI & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Completed
+\end{quote}
+\end{minipage} \\
+C++ simulator: hospital selection, rerouting, traffic model,
+articulation points, simulation clock, logging &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pending
+\end{quote}
+\end{minipage} \\
+System design and flow diagrams &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Completed (architecture diagram); flow diagrams in progress
+\end{quote}
+\end{minipage} \\
+Project report / documentation &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+In progress
+\end{quote}
+\end{minipage} \\
+Test results and scenario comparison &
+\begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Pending
+\end{quote}
+\end{minipage} \\
+Project presentation & \begin{minipage}[t]{\linewidth}\raggedright
+\begin{quote}
+Phase I completed; final presentation pending
+\end{quote}
+\end{minipage} \\
+\end{longtable}
+}
+
+\end{document}
