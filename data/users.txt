@@ -1,3 +1,0 @@
-# username password role   (U = user, D = dispatcher)
-Chhavi malik Dtaps kharb U
-taps kharb U
