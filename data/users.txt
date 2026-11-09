@@ -1,0 +1,2 @@
+# username password role (U = user, D = dispatcher)
+dispatcher1 disp123 D
