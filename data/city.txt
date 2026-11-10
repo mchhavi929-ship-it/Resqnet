@@ -1,6 +1,6 @@
 # J id x y type name
 J 1 0   0   base     Base Station
-J 2 100 0   normal   Main Road
+J 2 100 0   hospital Main Road
 J 3 200 0   normal   Station Chowk
 J 4 300 0   hospital City Hospital
 J 5 0   100 normal   Park Lane

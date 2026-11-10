@@ -8,14 +8,18 @@ extern "C" {
 #define INC_MAX        1000
 #define INC_USER_LEN   32
 #define INC_NOTE_LEN   200
-#define INC_MAX_UNITS  8
+#define INC_MAX_UNITS  96
+#define INC_MAX_HOSP   4
 
-enum IncStatus { INC_REPORTED = 0, INC_DISPATCHED = 1, INC_ARRIVED = 2, INC_RESOLVED = 3 };
+enum IncStatus { INC_REPORTED = 0, INC_DISPATCHED = 1, INC_ARRIVED = 2, INC_RESOLVED = 3, INC_RELEASED = 4 };
 
 typedef struct {
     int  id, type, location, severity, people, status, vcount;
     int  vehicles[INC_MAX_UNITS];
-    int  hospital;
+    int  delivered;
+    int  nHosp;
+    int  hosp[INC_MAX_HOSP];
+    int  hospPat[INC_MAX_HOSP];
     char reporter[INC_USER_LEN];
     char note[INC_NOTE_LEN];
 } Incident;

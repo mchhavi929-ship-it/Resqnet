@@ -26,12 +26,25 @@ int bestIndex(const Container& items, Cost cost) {
 }
 
 int ambulancesNeeded(int people);
+int othersNeeded(int people);
 std::vector<int> unitsNeeded(int type, int people);
+std::vector<int> unitsStillNeeded(const Incident& inc, const VehicleList& fleet);
+
 bool isBusy(int status);
 std::string formatRoute(const Graph& g, const std::vector<int>& route);
 void printVehicleLine(const Graph& g, const Vehicle& v, int target);
+
+int secondsUntilFree(const Graph& g, const VehicleList& fleet,
+                     const IncidentStore& store, int kind);
+
 bool dispatchIncident(const Graph& g, const VehicleList& fleet,
                       IncidentStore& store, int idx);
+
+void topUpIncident(const Graph& g, const VehicleList& fleet,
+                   IncidentStore& store, int idx);
+
+/* Frees the units of an arrived incident so other incidents can use them. */
+void releaseUnits(IncidentStore& store, int idx);
 
 } // namespace resqnet
 

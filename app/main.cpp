@@ -1,4 +1,5 @@
 #include <cstring>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -96,6 +97,32 @@ std::string hospitalRouteText(const Graph& g, const Hospital& h, int from) {
     return formatRoute(g, r) + " (" + std::to_string(secs) + " s)";
 }
 
+void printPatients(const Graph& g, const VehicleList& fleet,
+                   const std::vector<Hospital>& hs, const Incident& inc) {
+    if (inc.status == INC_REPORTED) return;
+
+    int waiting = inc.people - inc.delivered;
+    std::cout << " Patients: " << inc.delivered << " of " << inc.people << " delivered";
+    if (waiting > 0 && inc.status != INC_RESOLVED) std::cout << " | waiting for a bed: " << waiting;
+    std::cout << "\n";
+
+    for (int k = 0; k < inc.nHosp; ++k) {
+        int hi = inc.hosp[k];
+        if (hi < 0 || hi >= static_cast<int>(hs.size())) continue;
+        const Hospital& h = hs[hi];
+        std::cout << "   -> " << h.name << ": " << inc.hospPat[k] << " patient(s), beds free "
+                  << h.freeBeds << "/" << h.totalBeds << "\n"
+                  << "      Route: " << hospitalRouteText(g, h, inc.location) << "\n";
+    }
+
+    if (inc.status != INC_RESOLVED && inc.status != INC_RELEASED) {
+        int need = static_cast<int>(unitsStillNeeded(inc, fleet).size());
+        if (need > 0) {
+            std::cout << " Still needed: " << need << " more unit(s), waiting for free vehicles\n";
+        }
+    }
+}
+
 bool login(std::string& user, bool& isDispatcher) {
     while (true) {
         std::cout << "\n=== RESQNET Login ===\n1. Login\n2. Register (user)\n0. Exit\nChoice: ";
@@ -181,21 +208,15 @@ void userView(const Graph& g, const VehicleList& fleet, const std::vector<Hospit
 
         if (inc.status == INC_REPORTED) {
             std::cout << " Waiting for a team to be assigned.\n";
+        }
+        for (int k = 0; k < inc.vcount; ++k)
+            printVehicleLine(g, *fleet[inc.vehicles[k]], inc.location);
+
+        printPatients(g, fleet, hs, inc);
+
+        if (inc.status == INC_RESOLVED) {
+            std::cout << " Resolved. Thank you.\n";
         } else {
-            for (int k = 0; k < inc.vcount; ++k)
-                printVehicleLine(g, *fleet[inc.vehicles[k]], inc.location);
-            if (inc.status == INC_ARRIVED) std::cout << " Team has reached the scene.\n";
-            if (inc.status == INC_RESOLVED) std::cout << " Resolved. Thank you.\n";
-        }
-
-        if (inc.hospital >= 0 && inc.hospital < static_cast<int>(hs.size())) {
-            const Hospital& h = hs[inc.hospital];
-            std::cout << " Hospital : " << h.name << " | free beds " << h.freeBeds
-                      << "/" << h.totalBeds << "\n"
-                      << " Route to hospital: " << hospitalRouteText(g, h, inc.location) << "\n";
-        }
-
-        if (inc.status != INC_RESOLVED) {
             std::cout << " Precautions until the team arrives:\n   "
                       << type_precaution(inc.type) << "\n";
         }
@@ -236,8 +257,7 @@ void listIncidents(const Graph& g, const VehicleList& fleet, const std::vector<H
         std::cout.unsetf(std::ios::fixed);
         for (int k = 0; k < inc.vcount; ++k)
             printVehicleLine(g, *fleet[inc.vehicles[k]], inc.location);
-        if (inc.hospital >= 0 && inc.hospital < static_cast<int>(hs.size()))
-            std::cout << " Hospital: " << hs[inc.hospital].name << "\n";
+        printPatients(g, fleet, hs, inc);
     }
     line('-');
 }
@@ -283,6 +303,16 @@ void dispatchAll(const Graph& g, const VehicleList& fleet, IncidentStore& store)
     inc_save(&store, INCIDENT_FILE);
 }
 
+void topUp(const Graph& g, const VehicleList& fleet, IncidentStore& store) {
+    inc_load(&store, INCIDENT_FILE);
+    int id = readInt("Incident id to top up: ", 1, 100000);
+    int i = findIncident(store, id);
+    if (i < 0) { std::cout << "No incident with id " << id << ".\n"; return; }
+
+    topUpIncident(g, fleet, store, i);
+    inc_save(&store, INCIDENT_FILE);
+}
+
 void markArrived(IncidentStore& store) {
     inc_load(&store, INCIDENT_FILE);
     int id = readInt("Incident id where team arrived: ", 1, 100000);
@@ -298,42 +328,87 @@ void markArrived(IncidentStore& store) {
     std::cout << "Incident #" << id << " marked ARRIVED at scene.\n";
 }
 
-void deliverPatient(const Graph& g, const VehicleList& fleet, std::vector<Hospital>& hs,
-                    IncidentStore& store) {
+void deliverPatients(const Graph& g, const VehicleList& fleet, std::vector<Hospital>& hs,
+                     IncidentStore& store) {
     inc_load(&store, INCIDENT_FILE);
-    int id = readInt("Incident id to deliver to hospital: ", 1, 100000);
+    int id = readInt("Incident id to deliver patients: ", 1, 100000);
     int i = findIncident(store, id);
     if (i < 0) { std::cout << "No incident with id " << id << ".\n"; return; }
 
     Incident& inc = store.items[i];
-    if (inc.status != INC_ARRIVED) {
+    if (inc.status != INC_ARRIVED && inc.status != INC_RELEASED) {
         std::cout << "Team must reach the scene first (status: " << inc_status_name(inc.status) << ").\n";
         return;
     }
-    if (inc.hospital >= 0) {
-        std::cout << "Patient already delivered to " << hs[inc.hospital].name << ".\n";
-        return;
+    int remaining = inc.people - inc.delivered;
+    if (remaining <= 0) { std::cout << "All patients already delivered.\n"; return; }
+
+    int arrive = lastArrival(g, fleet, inc);
+    Simulation sim;
+    int moved = 0;
+    int need = capabilityNeeded(inc.severity);
+
+    for (int pass = 0; pass < 2 && remaining > 0; ++pass) {
+        int cap = (pass == 0) ? need : 1;
+        if (pass == 1 && need == 1) break;
+
+        std::vector<HospitalChoice> options = rankHospitals(g, hs, inc.location, cap);
+        for (const HospitalChoice& o : options) {
+            if (remaining <= 0) break;
+            if (hs[o.index].freeBeds <= 0) continue;
+
+            int slot = -1;
+            for (int k = 0; k < inc.nHosp; ++k) if (inc.hosp[k] == o.index) slot = k;
+            if (slot < 0) {
+                if (inc.nHosp >= INC_MAX_HOSP) continue;
+                slot = inc.nHosp++;
+                inc.hosp[slot] = o.index;
+                inc.hospPat[slot] = 0;
+            }
+
+            int n = admitPatients(hs, o.index, remaining);
+            if (n <= 0) continue;
+
+            inc.hospPat[slot] += n;
+            inc.delivered += n;
+            remaining -= n;
+            moved += n;
+
+            const Hospital& h = hs[o.index];
+            sim.schedule(arrive + o.secs, EventKind::PatientDelivered, inc.id,
+                         std::to_string(n) + " patient(s) taken to " + h.name +
+                         " via " + formatRoute(g, o.route) +
+                         " (beds left " + std::to_string(h.freeBeds) + "/" +
+                         std::to_string(h.totalBeds) + ")");
+        }
     }
 
-    HospitalChoice hc = selectHospital(g, hs, inc.location, capabilityNeeded(inc.severity));
-    if (hc.index < 0) {
-        std::cout << "No hospital has a free bed with enough capability right now.\n";
-        return;
-    }
-
-    admitPatient(hs, hc.index);
-    inc.hospital = hc.index;
     saveHospitals(hs, HOSPITAL_FILE);
     inc_save(&store, INCIDENT_FILE);
 
-    const Hospital& h = hs[hc.index];
-    int arrive = lastArrival(g, fleet, inc);
-    Simulation sim;
-    sim.schedule(arrive + hc.secs, EventKind::PatientDelivered, inc.id,
-                 "Patient taken to " + h.name + " via " + formatRoute(g, hc.route) +
-                 " (beds left " + std::to_string(h.freeBeds) + "/" + std::to_string(h.totalBeds) + ")");
+    if (moved == 0) {
+        std::cout << "No hospital has a free bed right now. " << remaining
+                  << " patient(s) still waiting.\n";
+        return;
+    }
+
     std::cout << "\n  Timeline:\n";
     sim.run(std::cout);
+    if (remaining > 0) {
+        std::cout << "  " << remaining << " patient(s) still waiting for a bed. "
+                  << "Deliver again when beds free up.\n";
+    } else {
+        std::cout << "  All patients delivered.\n";
+    }
+}
+
+void releaseTeams(IncidentStore& store) {
+    inc_load(&store, INCIDENT_FILE);
+    int id = readInt("Incident id to release its units: ", 1, 100000);
+    int i = findIncident(store, id);
+    if (i < 0) { std::cout << "No incident with id " << id << ".\n"; return; }
+    releaseUnits(store, i);
+    inc_save(&store, INCIDENT_FILE);
 }
 
 void resolveIncident(std::vector<Hospital>& hs, IncidentStore& store) {
@@ -345,13 +420,15 @@ void resolveIncident(std::vector<Hospital>& hs, IncidentStore& store) {
     Incident& inc = store.items[i];
     if (inc.status == INC_RESOLVED) { std::cout << "Already resolved.\n"; return; }
 
-    if (inc.hospital >= 0) {
-        dischargePatient(hs, inc.hospital);
-        saveHospitals(hs, HOSPITAL_FILE);
+    for (int k = 0; k < inc.nHosp; ++k) {
+        dischargePatients(hs, inc.hosp[k], inc.hospPat[k]);
+        inc.hospPat[k] = 0;
     }
+    saveHospitals(hs, HOSPITAL_FILE);
+
     inc.status = INC_RESOLVED;
     inc_save(&store, INCIDENT_FILE);
-    std::cout << "Incident #" << id << " resolved. Its teams are free and the bed is released.\n";
+    std::cout << "Incident #" << id << " resolved. The beds are released.\n";
 }
 
 void showHospitalBeds(const std::vector<Hospital>& hs) {
@@ -423,23 +500,26 @@ void dispatcherMenu(Graph& g, const VehicleList& fleet, std::vector<Hospital>& h
     while (true) {
         std::cout << "\n[DISPATCHER]\n"
                   << " 1. All incidents        2. Dispatch next        3. Dispatch all pending\n"
-                  << " 4. Team arrived         5. Deliver to hospital  6. Mark resolved\n"
-                  << " 7. Road status          8. Hospital beds        9. Reload traffic\n"
-                  << "10. Critical junctions  11. Event log           12. Logout\nChoice: ";
+                  << " 4. Top up units         5. Team arrived         6. Deliver patients\n"
+                  << " 7. Mark resolved        8. Road status          9. Hospital beds\n"
+                  << "10. Reload traffic      11. Critical junctions  12. Event log\n"
+                  << "13. Logout              14. Release units\nChoice: ";
         std::string c = readLine();
         if (c == "1") listIncidents(g, fleet, hs, store);
         else if (c == "2") dispatchNext(g, fleet, store);
         else if (c == "3") dispatchAll(g, fleet, store);
-        else if (c == "4") markArrived(store);
-        else if (c == "5") deliverPatient(g, fleet, hs, store);
-        else if (c == "6") resolveIncident(hs, store);
-        else if (c == "7") toggleRoad(g);
-        else if (c == "8") showHospitalBeds(hs);
-        else if (c == "9") reloadTraffic(g);
-        else if (c == "10") showCritical(g);
-        else if (c == "11") showEventLog();
-        else if (c == "12") break;
-        else std::cout << "Please choose a number from 1 to 12.\n";
+        else if (c == "4") topUp(g, fleet, store);
+        else if (c == "5") markArrived(store);
+        else if (c == "6") deliverPatients(g, fleet, hs, store);
+        else if (c == "7") resolveIncident(hs, store);
+        else if (c == "8") toggleRoad(g);
+        else if (c == "9") showHospitalBeds(hs);
+        else if (c == "10") reloadTraffic(g);
+        else if (c == "11") showCritical(g);
+        else if (c == "12") showEventLog();
+        else if (c == "13") break;
+        else if (c == "14") releaseTeams(store);
+        else std::cout << "Please choose a number from 1 to 14.\n";
     }
 }
 
@@ -449,6 +529,9 @@ int main() {
     static Graph graph;
     static IncidentStore store;
     graph_init(&graph);
+
+    std::error_code ec;
+    std::filesystem::create_directories("logs", ec);
 
     VehicleList fleet;
     std::vector<Hospital> hospitals;

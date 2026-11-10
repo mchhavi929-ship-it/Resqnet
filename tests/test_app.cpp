@@ -13,17 +13,17 @@ using namespace resqnet;
 int main() {
     assert(ambulancesNeeded(1) == 1);
     assert(ambulancesNeeded(8) == 2);
-    assert(ambulancesNeeded(2027) == 4);
-    std::cout << "PASS ambulance count rule (1 -> 1, 8 -> 2, 2027 -> 4)\n";
+    assert(ambulancesNeeded(2027) == 60);
+    std::cout << "PASS ambulances scale with people (1->1, 8->2, 2027->60)\n";
 
-    std::vector<int> units = unitsNeeded(1, 2027);
+    std::vector<int> units = unitsNeeded(1, 2027);   /* Fire Emergency */
     int ambs = 0, trucks = 0;
     for (int u : units) {
         if (u == VK_AMBULANCE) ambs++;
         if (u == VK_FIRE_TRUCK) trucks++;
     }
-    assert(ambs == 4 && trucks == 1);
-    std::cout << "PASS 2027 people -> 4 ambulances + 1 fire truck\n";
+    assert(ambs == 60 && trucks == 5);
+    std::cout << "PASS 2027 people -> 60 ambulances + 5 fire trucks requested\n";
 
     Graph g;
     graph_init(&g);
@@ -40,14 +40,17 @@ int main() {
     std::cout << "PASS road and helicopter ETAs\n";
 
     auto hs = loadHospitals("data/hospitals.txt");
-    HospitalChoice hc = selectHospital(g, hs, 2, 1);
-    assert(hc.index >= 0 && hs[hc.index].location == 4 && hc.secs == 90);
-    int before = hs[hc.index].freeBeds;
-    assert(admitPatient(hs, hc.index));
-    assert(hs[hc.index].freeBeds == before - 1);
-    dischargePatient(hs, hc.index);
-    assert(hs[hc.index].freeBeds == before);
-    std::cout << "PASS hospital selection, admit and discharge\n";
+    auto opts = rankHospitals(g, hs, 2, 1);
+    assert(!opts.empty() && hs[opts[0].index].location == 4);
+    int idx = opts[0].index;
+    int before = hs[idx].freeBeds;
+    assert(admitPatients(hs, idx, 3) == 3);
+    assert(hs[idx].freeBeds == before - 3);
+    assert(admitPatients(hs, idx, 999) == before - 3);   /* capped by free beds */
+    assert(hs[idx].freeBeds == 0);
+    dischargePatients(hs, idx, before);
+    assert(hs[idx].freeBeds == before);
+    std::cout << "PASS hospital ranking, partial admit, bed cap, discharge\n";
 
     std::cout << "All app tests passed.\n";
     return 0;
