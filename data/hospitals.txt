@@ -1,4 +1,4 @@
 # H id location total_beds free_beds capability name
-H 4 4 200 200 4 City Hospital
-H 10 10 150 150 3 Green Hospital
-H 2 2 150 150 4 Main Road Hospital
+H 4 4 200 0 4 City Hospital
+H 10 10 150 0 3 Green Hospital
+H 2 2 150 0 4 Main Road Hospital

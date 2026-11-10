@@ -25,8 +25,6 @@ std::vector<bool> busyVehicles(const VehicleList& fleet, const IncidentStore& st
     return busy;
 }
 
-/* Assigns free units of every needed kind. Returns units added.
-   'shortage' gets the number of units still missing. */
 int fillUnits(const Graph& g, const VehicleList& fleet, IncidentStore& store,
               int idx, int& shortage) {
     Incident& inc = store.items[idx];
@@ -159,31 +157,13 @@ int secondsUntilFree(const Graph& g, const VehicleList& fleet,
             if (vi < 0 || vi >= static_cast<int>(fleet.size())) continue;
             if (fleet[vi]->kind() != kind) continue;
 
-            /* Leg 1: unit travels to the scene */
             std::vector<int> r1;
             int toScene = fleet[vi]->eta(g, o.location, r1);
             if (toScene < 0) continue;
 
-            /* Leg 2: scene to the nearest hospital this incident uses.
-               If none yet, use the nearest hospital with a bed for the patient's capability. */
-            int toHosp = 0;
-            int hospLoc = -1;
-            if (o.nHosp > 0 && o.hosp[0] >= 0) {
-                hospLoc = -1;
-            }
-            (void)hospLoc;
-            int best2 = -1;
-            for (int h = 0; h < g.edgeCount; ++h) { (void)h; break; }
-            (void)best2;
-
-            /* Scene to the nearest hospital on the map (any hospital junction),
-               since the unit may take patients to the closest one. */
             int bestHosp = -1;
             for (int j = 1; j <= GRAPH_MAX_NODES; ++j) {
                 if (!graph_has_node(&g, j)) continue;
-                if (g.nodes[j].type[0] != 'h') {
-                    /* type is stored as typed in city.txt, e.g. "hospital" */
-                }
                 const char* t = g.nodes[j].type;
                 if (t[0] != 'h' && t[0] != 'H') continue;
                 int path[GRAPH_MAX_NODES];
@@ -191,14 +171,9 @@ int secondsUntilFree(const Graph& g, const VehicleList& fleet,
                 if (graph_shortest_path(&g, o.location, j, path, GRAPH_MAX_NODES, &secs) == 0) continue;
                 if (bestHosp < 0 || secs < bestHosp) bestHosp = secs;
             }
-            toHosp = (bestHosp < 0) ? 0 : bestHosp;
+            int toHosp = (bestHosp < 0) ? 0 : bestHosp;
 
-            /* Release estimate: scene travel + hospital leg + return to base */
-            std::vector<int> r2;
-            int backToBase = fleet[vi]->eta(g, fleet[vi]->location(), r2);
-            (void)backToBase;
             int total = toScene + toHosp;
-
             if (best < 0 || total < best) best = total;
         }
     }
@@ -243,6 +218,21 @@ void topUpIncident(const Graph& g, const VehicleList& fleet,
     if (added == 0 && shortage == 0) std::cout << "  Already has all the units it needs.\n";
     else if (added == 0)             std::cout << "  No free units right now. Still short: " << shortage << "\n";
     else                             std::cout << "  Added " << added << " unit(s). Still short: " << shortage << "\n";
+}
+
+void releaseUnits(IncidentStore& store, int idx) {
+    Incident& inc = store.items[idx];
+    if (inc.status != INC_ARRIVED) {
+        std::cout << "Only an arrived incident can release its units.\n";
+        return;
+    }
+    int freed = inc.vcount;
+    for (int k = 0; k < INC_MAX_UNITS; ++k) inc.vehicles[k] = -1;
+    inc.vcount = 0;
+    inc.status = INC_RELEASED;
+    std::cout << "Released " << freed << " unit(s) from #" << inc.id
+              << ". They are free for other incidents now.\n"
+              << "Patients still in hospital are kept until you mark it resolved.\n";
 }
 
 } // namespace resqnet
